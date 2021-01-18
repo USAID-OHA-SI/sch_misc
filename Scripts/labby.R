@@ -16,7 +16,6 @@ library(Wavelength)
 library(googlesheets4)
 library(gt)
 
-
 # GLOBAL VARIABLES --------------------------------------------------------
 
 data_in <- "Data"
