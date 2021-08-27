@@ -14,9 +14,7 @@ library(googledrive)
 local_drive <- "C:/Users/mhartig/Documents/COP21/Supply Planning Tool/pulled_from_gdrive"
 
 gdrive_fldr <- as_id(googledrive::as_id("1lGl9OMLoi3S3hkNqU97B1YE2MrsinDIw"))
-
 files <- drive_ls(gdrive_fldr) %>% dplyr::pull(name)
-
 purrr::walk(files,
             ~ import_drivefile(gdrive_fldr, .x,
                                zip = FALSE,
@@ -43,14 +41,12 @@ merge_procure <- function(file){
 
 #Create global stock dataset
 global_stock_df <- purrr::map_dfr(.x = files, .f = ~merge_stock(.x))
-#Create global procure dataset, remove blank rows
-global_procure_df <- purrr::map_dfr(.x = files, .f = ~merge_procure(.x))%>% 
-  filter(!is.na(Item))
+#Create global procure dataset
+global_procure_df <- purrr::map_dfr(.x = files, .f = ~merge_procure(.x))
 
 #check data
 glimpse(global_stock_df)
 global_stock_df%>%distinct(OU)%>%print(n=Inf)
-global_stock_df%>%distinct()%>%print(n=Inf)
 glimpse(global_procure_df)
 global_procure_df%>%distinct(OU)%>%print(n=Inf)
 
