@@ -147,14 +147,12 @@ ssudan_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/O
          instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
          
          add_facility = "Yes",
-         #coding any facilites that only have GeneXpert machines as "near POC"
+#coding any facilites that only have GeneXpert machines as "near POC"
          lab_type = case_when(grepl("GeneX", instrument1_type)~"Near POC", TRUE~ "Conventional")
          )
 
-
 glimpse(ssudan_df)
 count(ssudan_df, lab_type)
-
 
 
 # Ethiopia ------------------------------------------------------------
@@ -174,9 +172,12 @@ mutate(instrument3_other = as.character(NA),
        instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
        
        add_facility = "No",
-       lab_type = as.character(NA))
- ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-##NEED TO GO BACK AND ADD IN LAB TYPE HERE, IF ONLY GENEXPERT, THEN LAB_TYPE = "NEAR POC"
+       lab_type = case_when(grepl("GeneX", instrument1_type)~"Near POC", TRUE~ "Conventional"))
+
+#check:
+glimpse(ethiopia_df1)
+count(ethiopia_df1, lab_type)
+
 
 ethiopia_df2 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
                            sheet = "Not listed Conventional VL EID ",skip = 1, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other"))%>%
@@ -191,13 +192,17 @@ ethiopia_df2 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tool
          add_facility = "Yes",
          lab_type = "Conventional")
 #check
-glimpse(ethiopia_df1)
 glimpse(ethiopia_df2)
 
 #MERGE TWO ETHIOPIA FILES:
 ethiopia_df <- ethiopia_df1%>%rbind(ethiopia_df2)
 #check
 glimpse(ethiopia_df)
+
+#!!!!!!!!!!!!!!!!!!!
+#!! Need to go back and add in facility_type for 'Dembi Dollo Hospital' after getting confirmation from Mission Team
+
+
 
 
 
