@@ -22,7 +22,7 @@ input <- "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools"
 #    but no entry under 'Intrument 1 Type' is categorized as POC
 #Kenya team also wrote in two facilites for POC that were not included in the original list,
 #    I am creating a variable 'add_facility' to indicate whether labs were added to the list
-#Kenya should have 10 convential labs, 6 POC locations, and 2 facilities *not* included in DATIM
+#Kenya should have 10 convential labs, 6 POC locations, and 2 facilities *not* included in pre-populated list
 #Kenya also included a field at the end of the excel tool ('no_of_equip') that indicates the number of each type of instrument at each site, 
 #    since they did not have enough columns to include all of the instruments, in the code below I create new 'instrument' entries for this 
 #    information but note that we only have the name of the instruments for these write-ins and not the tes type
@@ -43,7 +43,7 @@ kenya_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Or
                                     facility %in% c("National HIV reference lab")~"Roche CAPCTM 96"),
        instrument7_type = case_when(facility %in% c("Moi Teaching Refferal Hospital", "National HIV reference lab")~ "Roche CAPCTM 96",
                                     facility == "Kericho District Hospital"~ "Roche 6800"))%>%
-#Create 'datim' variable:
+#Create 'add_facility' variable:
   mutate(add_facility= case_when(!is.na(facilityid)~ "No", TRUE ~ "Yes"))%>%
 #Create 'lab_type' variable:
   mutate(lab_type = NA)%>%
@@ -105,15 +105,6 @@ malawi_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/O
 
 glimpse(malawi_df)
 
-
-# Ethiopia ------------------------------------------------------------
-ethiopia_df1 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
-                        sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))
-  #Add columns to match other datasets
-  
-##!!ADD IN , "instrument3_other" LATER IN THE CODE
-glimpse(ethiopia_df)
-
 # CARIBBEAN ---------------------------------------------------------------
 
 #The drop down selection in the tool in includes all facilities in the Western Hemisphere Regio
@@ -137,4 +128,13 @@ caribbean_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tool
 
 glimpse(caribbean_df)
 count(caribbean_df, lab_instruments)
+
+
+# Ethiopia ------------------------------------------------------------
+ethiopia_df1 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
+                           sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))
+#Add columns to match other datasets
+
+##!!ADD IN , "instrument3_other" LATER IN THE CODE
+glimpse(ethiopia_df)
 
