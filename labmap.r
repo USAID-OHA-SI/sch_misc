@@ -72,14 +72,14 @@ dr_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Origi
                       "accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	
                       "instrument1_tb",	"instrument1_covid",	"instrument1_other"))%>%
 #Add columns to match other datasets
-  mutate(instrument2_type = as.character(NA), instrument2_vl = as.character(NA),	instrument2_eid = as.character(NA),	instrument2_tb = as.character(NA),	instrument2_covid = as.character(NA),
-         instrument3_type = as.character(NA), instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),
-         instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),
-         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),
-         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),
-         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),
-         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),
-         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),
+  mutate(instrument2_type = as.character(NA), instrument2_vl = as.character(NA),	instrument2_eid = as.character(NA),	instrument2_tb = as.character(NA),	instrument2_covid = as.character(NA),instrument2_other = as.character(NA),
+         instrument3_type = as.character(NA), instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),instrument3_other = as.character(NA),
+         instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),instrument8_other = as.character(NA),
+         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
           
          add_facility = "No",
          lab_type = "Conventional"
@@ -92,12 +92,12 @@ glimpse(dr_df)
 malawi_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL Malawi.xlsx",
                     sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other")) %>%
   #Add columns to match other datasets
-  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),
-         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),
-         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),
-         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),
-         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),
-         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),
+  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),instrument8_other = as.character(NA),
+         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
          
          add_facility = "No",
          lab_type = "Conventional"
@@ -114,12 +114,12 @@ glimpse(malawi_df)
 caribbean_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL Caribbean.xlsx",
                         sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other")) %>%
   #Add columns to match other datasets
-  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),
-         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),
-         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),
-         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),
-         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),
-         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),
+  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),instrument8_other = as.character(NA),
+         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
          
          add_facility = "No",
          lab_type = "Conventional") %>%
@@ -131,10 +131,44 @@ count(caribbean_df, lab_instruments)
 
 
 # Ethiopia ------------------------------------------------------------
-ethiopia_df1 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
-                           sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))
-#Add columns to match other datasets
+#Ethiopia added 'not-listed' lab into a second tab in the tool, so I will pull those in separately and merge
 
-##!!ADD IN , "instrument3_other" LATER IN THE CODE
+ethiopia_df1 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
+                           sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))%>%
+#remive blank rows:
+  filter(!is.na(operatingunit))%>%
+  #Add columns to match other datasets
+mutate(instrument3_other = as.character(NA),
+      instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+       instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+       instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+       instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+       instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),instrument8_other = as.character(NA),
+       instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
+       
+       add_facility = "No",
+       lab_type = as.character(NA))
+ ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+##NEED TO GO BACK AND ADD IN LAB TYPE HERE, IF ONLY GENEXPERT, THEN LAB_TYPE = "NEAR POC"
+
+ethiopia_df2 <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Filled  PEPFAR Lab Data Collection TOOL_Ethiopia_8.13.2021.xlsx",
+                           sheet = "Not listed Conventional VL EID ",skip = 1, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other"))%>%
+  #Add columns to match other datasets
+  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         instrument8_type = as.character(NA), instrument8_vl = as.character(NA),	instrument8_eid = as.character(NA),	instrument8_tb = as.character(NA),	instrument8_covid = as.character(NA),instrument8_other = as.character(NA),
+         instrument9_type = as.character(NA), instrument9_vl = as.character(NA),	instrument9_eid = as.character(NA),	instrument9_tb = as.character(NA),	instrument9_covid = as.character(NA),instrument9_other = as.character(NA),
+         
+         add_facility = "Yes",
+         lab_type = "Conventional")
+#check
+glimpse(ethiopia_df1)
+glimpse(ethiopia_df2)
+
+#MERGE TWO ETHIOPIA FILES:
+ethiopia_df <- ethiopia_df1%>%rbind(ethiopia_df2)
+#check
 glimpse(ethiopia_df)
 
