@@ -13,6 +13,7 @@
 *.png
 *.twbx
 *.pptx
+*.7z
 
 #nothing from these folders
 AI/*

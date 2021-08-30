@@ -27,11 +27,35 @@ mer_lab <- "~/Data/lab/mer"
 source <- "DATIM Genie extract 2020-17-01"
 
 vl <- c("LAB_PTCQI_HIV_Viral_Load_PT",
-        "LAB_PTCQI_HIV_Viral_Load_CQI")
+        "LAB_PTCQI_HIV_Viral_Load_CQI",
+        "LAB_PTCQI_HIV_IVT_EID_CQI",
+        "LAB_PTCQI_HIV_IVT_EID_PT")
 
 heir_loc <- "1zhx6bRnoFACyyOiRWkq1M15MWHjQr2FmlZeYJsT02pw"
 
 images <- "Images"
+
+sims_ids <- c(1176,
+              1735,
+              1734,
+              932,
+              1675,
+              1787,
+              1419,
+              1769,
+              1785,
+              1607,
+              1491,
+              1674,
+              1779,
+              1189,
+              1338,
+              1188,
+              1393,
+              1394,
+              1588,
+              1770,
+              1730)
 
 
 
@@ -134,6 +158,9 @@ tbl_missing_geo %>% gtsave("images/cdc_missing_geo.png")
 
 df_cdc %>% distinct(lab_name)
 
+##write csv
+
+df_cdc_dist %>% write_csv("Dataout/cdc_lab_list.csv")
 
 #DATIM------------------------------------------------------------------------
 ## read in MER lab data
@@ -159,7 +186,7 @@ df_labs_distinct <- df_labs %>%
 
 hierarchy <- googlesheets4::read_sheet("1zhx6bRnoFACyyOiRWkq1M15MWHjQr2FmlZeYJsT02pw",
                                        sheet = "HFR_FY21_GLOBAL_orghierarchy_20210115.csv",
-                                       col_types= c(.default = "c")) %>% 
+                                       col_types= c(.default = "c"))
 
 ##join
 
@@ -200,6 +227,24 @@ tbl <- df_labs_distinct %>%
 
 tbl %>% gtsave("images/mer_lab_sitesv1.png")
   
+## write csv 
+df_labs_distinct %>% 
+  write_csv("Dataout/mer_labs_distinct.csv")
+
+
+#accursed sims-----------------------------------------------------
+
+df_labresults <- read_xlsx("Data/SIMS_Structured_Datasets_Site_IM_FY19-20_20201218_v2_1_Nigeria.xlsx",
+                        sheet = "cee_results") %>% 
+  filter(sims_univ_data_element_srgt %in% sims_ids,
+         cee_number_of_asmt!= 0) %>% 
+  distinct(organisation_srgt) %>% 
+  paste0()
+
+
+df_sims_sites <- read_xlsx("Data/SIMS_Structured_Datasets_Site_IM_FY19-20_20201218_v2_1_Nigeria.xlsx",
+                        sheet = "org") %>% 
+  filter(organisation_srgt %in% df_labresults)
 
 
 #scratch-----------------------------------------------------------

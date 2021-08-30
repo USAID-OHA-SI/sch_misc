@@ -1,18 +1,4 @@
-## read money
-## begin parsing MFS from PSM
-## 3/3/21
-
-library(here)
-library(readxl)
-
-install.packages("openxlsx")
-library(openxlsx)
-
-df_sum <- read_xlsx("data/Zimbabwe December 2020.xlsx",
-                sheet = "TO1-Summary",
-                skip = 6) %>%
-  filter(SUMMARY %in% c("Applied Pipeline","COP20 (FY21) New Funding")) %>%
-  select(SUMMARY, COP, `Total Country Funds`)
+extract_mfs <- function(file) {
 
   ##read in TO1-COP tab
   # create some objects
@@ -37,19 +23,19 @@ df_sum <- read_xlsx("data/Zimbabwe December 2020.xlsx",
             "Office Operations")
  
  ## get period
- period <- read_xlsx("data/Zimbabwe December 2020.xlsx",
+ period <- read_xlsx(file,
                      sheet = "TO1-COP",
                     range = "D4") %>% 
    names()
  
- ou <- read_xlsx("data/Zimbabwe December 2020.xlsx",
+ ou <- read_xlsx(file,
                  sheet = "TO1-Summary",
                  range = "B1") %>% 
    names()
 
   
 
-df_ta <- read_xlsx("data/Zimbabwe December 2020.xlsx",
+df_ta <- read_xlsx(file,
                     sheet = "TO1-COP",
                     skip = 8) %>%
   janitor::clean_names() %>%
@@ -76,7 +62,7 @@ df_ta <- read_xlsx("data/Zimbabwe December 2020.xlsx",
   mutate(value =round(value, 0))
 
 #read in commodities freight
-df_freight <- read_xlsx("data/Zimbabwe December 2020.xlsx",
+df_freight <- read_xlsx(file,
                         sheet = "TO1-COP",
                         skip = 33) %>%
   janitor::clean_names() %>%
@@ -97,7 +83,7 @@ df_freight <- read_xlsx("data/Zimbabwe December 2020.xlsx",
 
  
   #read in commodities total
-  df_commod <- read_xlsx("data/Zimbabwe December 2020.xlsx",
+  df_commod <- read_xlsx(file,
                           sheet = "TO1-COP",
                           skip = 33) %>%
     janitor::clean_names() %>%
@@ -132,9 +118,11 @@ df_freight <- read_xlsx("data/Zimbabwe December 2020.xlsx",
     relocate(period, .after = country) %>% 
     relocate(category, .before = detail) %>% 
     relocate(subcategory, .before = detail)
+  
+  return(df)
+  
+}
 
-
-  df %>% write_csv("dataout/mfs_rework_v4.csv")
   
   
   
