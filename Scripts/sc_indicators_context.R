@@ -34,21 +34,27 @@ merdata <- glamr::si_path("path_msd")
 rasdata <- glamr::si_path("path_raster")
 shpdata <- glamr::si_path("path_vector")
 datim   <- glamr::si_path("path_datim")  
+  
+  first_line <- c("ARV Bottles - TLD 30-count",
+                 "ARV Bottles - TLE/400 30-count",
+                 "ARV Bottles - TLD 90-count",
+                 "ARV Bottles - TLD 180-count",
+                 "ARV Bottles - TLE 600/TEE",
+                 "ARV Bottles - TLE/400 90-count")
+  
+  tld <- c("ARV Bottles - TLD 30-count", "ARV Bottles - TLD 90-count", "ARV Bottles - TLD 180-count")
+  
+  colors_cat <- c(denim, scooter, burnt_sienna)
+  
 
-adult_arv <- c("ARV Bottles - TLD 30-count",
-               "ARV Bottles - TLE/400 30-count",
-               "ARV Bottles - TLD 90-count",
-               "ARV Bottles - NVP Adult",
-               "ARV Bottles - Other Adult",
-               "ARV Bottles - TLD 180-count",
-               "ARV Bottles - TLE 600/TEE",
-               "ARV Bottles - TLE/400 90-count")
 
-tld <- c("ARV Bottles - TLD 30-count", "ARV Bottles - TLD 90-count", "ARV Bottles - TLD 180-count")
-
-
-
+## site level with sc* indicators
 df <- read_msd(file.path(merdata, "Genie-SiteByIMs-MultipleOUs-Frozen-2021-09-14.zip")) %>% 
+  reshape_msd("quarters") %>% glimpse()
+
+##OU by IM
+
+df_ou <- read_msd(file.path(merdata, "MER_Structured_Datasets_OU_IM_FY19-21_20210813_v1_1.zip")) %>% 
   reshape_msd("quarters") %>% glimpse()
 
 #munge----------------------------------------------------------------------------
@@ -85,7 +91,7 @@ df_share <- df %>%
 
 df_tld <- df %>% 
   filter(indicator == "SC_ARVDISP",
-         otherdisaggregate %in% adult_arv,
+         otherdisaggregate %in% first_line,
          results != 0) %>%
   mutate(mot = case_when(otherdisaggregate %in% c("ARV Bottles - TLD 90-count",
                                                   "ARV Bottles - TLE/400 90-count") ~ (results*3),
@@ -98,10 +104,54 @@ df_tld <- df %>%
          tld_tot = case_when(otherdisaggregate %in% tld ~ mot)) %>%
   group_by(operatingunit, indicator, period, first_tot) %>% 
   summarise(tld_tot = sum(tld_tot, na.rm = T)) %>% 
+  ungroup() %>%
+  mutate(share_tld = (round(tld_tot/first_tot,2))) %>% 
+  mutate(tertile = ifelse(period == "FY21Q2",ntile(first_tot, 3),NA)) %>% 
+  fill(., tertile, .direction = "up")
+
+df_tld %>% write_csv("Dataout/tld_share.csv")
+
+
+#tx_mmd dataset
+
+
+# df_mmd <- df_ou %>% 
+#   filter(indicator == "TX_CURR",
+#          period %in% c("FY20Q4", "FY21Q1", "FY21Q2", "FY21Q3"),
+#          standardizeddisaggregate %in% c("Total Numerator", "Age/Sex/ARVDispense/HIVStatus")) %>%
+#   mutate(mmd = case_when(otherdisaggregate == "ARV Dispensing Quantity - 3 to 5 months" ~ "mmd",
+#                          otherdisaggregate == "ARV Dispensing Quantity - 6 or more months" ~ "mmd",
+#                          standardizeddisaggregate == "Total Numerator" ~ "tot_num",
+#                          TRUE ~ "not_mmd")) %>%
+#   group_by(operatingunit, period, mmd) %>% 
+#   summarise(results = sum(results)) %>%
+#   filter(mmd != "not_mmd") %>%
+#   group_by(operatingunit, period) %>% 
+#   dplyr::mutate(share = round(results/sum(results, na.rm = TRUE),2)) %>% 
+#   ungroup() %>% 
+#   mutate(color_fill = ifelse(period == "FY20Q4", "white", "#7fbf7b"),
+#          color_stroke = ifelse(period == "FY20Q4", "#af8dc3", "#7fbf7b"),
+#          min_eb = case_when(period == "FY21Q3" ~ .95*share),
+#          max_eb = case_when(period == "FY21Q3" ~ 1.05*share))
+  
+df_mmd <- df_ou %>% 
+  filter(indicator == "TX_CURR",
+         period %in% c("FY20Q4", "FY21Q1", "FY21Q2", "FY21Q3"),
+         standardizeddisaggregate %in% c("Total Numerator", "Age/Sex/ARVDispense/HIVStatus")) %>%
+  mutate(mmd = case_when(otherdisaggregate == "ARV Dispensing Quantity - 3 to 5 months" ~ "mmd",
+                         otherdisaggregate == "ARV Dispensing Quantity - 6 or more months" ~ "mmd",
+                         standardizeddisaggregate == "Total Numerator" ~ "tot_num",
+                         TRUE ~ "not_mmd")) %>%
+  group_by(operatingunit, period, mmd) %>% 
+  summarise(results = sum(results)) %>%
+  filter(mmd != "not_mmd") %>%
+  pivot_wider(names_from = c("mmd"), values_from = "results") %>%
+  mutate(share = round(mmd/tot_num, 2)) %>% 
   ungroup() %>% 
-  
-  
-  
+  mutate(color_fill = ifelse(period == "FY20Q4", "white", "#7fbf7b"),
+         color_stroke = ifelse(period == "FY20Q4", "#af8dc3", "#7fbf7b"),
+         min_eb = case_when(period == "FY21Q3" ~ .95*share),
+         max_eb = case_when(period == "FY21Q3" ~ 1.05*share))
   
   
 #viz-------------------------------------------------------------------------------
@@ -140,6 +190,154 @@ df_share %>%
   si_style() +
   theme(legend.title = element_blank()) +
   glitr::si_save("Images/sc_tx_vol.png", scale = 1.5)
+
+#Line plot
+df_tld %>% 
+  ggplot(aes(x = period, y = share_tld, group = operatingunit)) +
+  geom_line() +
+  si_style() +
+  si_style_ygrid() +
+  facet_wrap(~operatingunit, scales = "fixed") +
+  geom_point(shape = 21, size = 3) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_y_continuous(label = percent) +
+  labs(x = NULL, y = NULL, title = "TLD as a percentage of all 1st line dispersement",
+       subtitle = "",
+       caption = "Source: Genie Q3 refresh, frozen")
+
+  si_save("Images/tld_percent.png", scale = 1.5)
+
+  scale_color_identity() +
+    si_style_nolines() +
+    
+##slope chart
+    
+  df_tld %>% 
+    filter(period %in% c("FY20Q4", "FY21Q2")) %>% 
+    ggplot(aes(x = period,
+               y = share_tld,
+               group = operatingunit)) +
+    geom_line() +
+    facet_wrap(~tertile) +
+    geom_point(shape = 21, size = 3) +
+    scale_fill_identity() +
+    scale_color_identity() +
+    si_style_nolines() +
+    scale_x_discrete(expand = c(0.05, 0.05)) +
+    ggrepel::geom_text_repel(data = . %>% filter(period == "FY21Q2"), 
+                             aes(label = paste0(operatingunit, " - ", scales::percent(share_tld))), 
+                             nudge_x = - 0.3,
+                             hjust = -0.5,
+                             size = 3,
+                             force = 1)
+  
+  ##tim's slope
+  ##slope chart
+  
+  df_tld_tim <- 
+    df_tld %>% 
+    mutate(facet_order = case_when(
+      tertile == 3 ~ "High",
+      tertile == 2 ~ "Medium", 
+      TRUE ~ "Low"
+    ),
+    facet_order = fct_reorder(facet_order, tertile, .desc = T),
+    ou_short = case_when(
+      operatingunit == "Democratic Republic of the Congo" ~ "DRC",
+      operatingunit == "Western Hemisphere Region" ~ "WHR", 
+      operatingunit == "West Africa Region" ~ "WAR",
+      operatingunit == "Dominican Republic" ~ "DR",
+      TRUE ~ operatingunit
+    ), 
+    point_label = paste0("       ", ou_short, ": ", scales::percent(share_tld, 1))) 
+  
+  df_tld_tim %>% 
+    filter(period %in% c("FY20Q4", "FY21Q2")) %>% 
+    ggplot(aes(x = period,
+               y = share_tld,
+               group = operatingunit)) +
+    geom_line(size = 1, color = grey20k) +
+    geom_point(size = 5, color = "white")+
+    geom_point(shape = 21, size = 4, aes(fill = share_tld), stroke = 0) +
+    facet_wrap(~facet_order, scales = "free_y") +
+    scale_fill_si(palette = "scooters", labels = percent) +
+    scale_x_discrete(limits = c("FY20Q4", "FY21Q2")) +
+    scale_y_continuous(labels = percent) +
+    ggrepel::geom_text_repel(data = . %>% filter(period == "FY21Q2"), 
+                             aes(label = point_label),
+                             hjust = 0,
+                             size = 9/.pt,
+                             force = 1,
+                             direction = "y",
+                             force_pull   = 0) +
+    ggrepel::geom_text_repel(data = . %>% filter(period == "FY20Q4"), 
+                             aes(label = paste(ou_short, "   ")),
+                             hjust = 1,
+                             size = 9/.pt,
+                             force = 1,
+                             direction = "y",
+                             force_pull   = 0, 
+                             segment.color = NA) +
+    coord_cartesian(expand = T) +
+    si_style_ygrid() +
+    si_legend_fill() +
+    labs(fill = "TLD Share", x = NULL, y = NULL)
+  
+  
+  
+  # What if we just make a small multiple plot where each OU is ordered by the group and rank within?
+  df_tld_tim %>% 
+    mutate(ou_facet = paste0(facet_order, ":", ou_short),
+           sort_var = case_when(
+             period == "FY21Q2" ~ share_tld
+           )
+    ) %>% 
+    group_by(ou_short) %>% 
+    fill(., sort_var, .direction = "up") %>% 
+    ungroup() %>% 
+    mutate(ou_facet_order = tidytext::reorder_within(ou_facet, facet_order, sort_var)) %>%
+    filter(period %in% c("FY20Q4", "FY21Q2")) %>% 
+    ggplot(aes(x = period, y = share_tld)) +
+    geom_line(data = . %>% select(-ou_short, -ou_facet), color = grey10k, aes(group = operatingunit)
+    ) +
+    geom_line(color = grey40k, size = 1, aes(group = ou_short)) +
+    geom_point(data = . %>% select(-ou_short, -ou_facet), color = grey10k, size = 3) +
+    geom_point(shape = 21, size = 4, aes(fill = share_tld)) +
+    scale_fill_si(palette = "scooters", labels = percent) +
+    geom_text(data = . %>% filter(period == "FY21Q2"), 
+              aes(label = percent(share_tld, 1)), hjust = -0.4, size = 9/.pt) +
+    scale_x_discrete(expand = c(0.1, 0.2)) +
+    facet_wrap(~ou_short) +
+    si_style_ygrid() +
+    labs(fill = "TLD Share", x = NULL, y = NULL) +
+    scale_y_continuous(labels = percent, limits = c(-0.05, 1.05)) +
+    theme(legend.position = "none")
+  
+  
+  ##mmd table
+  
+  df_mmd %>%
+    filter(period %in% c("FY20Q4", "FY21Q3")) %>% 
+    ggplot(aes(x = share, y = operatingunit, color = color_stroke, fill = color_fill)) +
+      geom_line(aes(group = operatingunit), color = "gray70", show.legend = T) +
+      geom_crossbar(data = filter(df_mmd, period == "FY20Q4"), 
+                    aes(xmin = min_eb, xmax = max_eb), na.rm = TRUE,
+                    fill = "gray70", color=NA, alpha = .2) +
+    geom_point(size = 4.5, shape = 21, stroke = 2, fill = "white", color = "white") +
+    geom_point(size = 4.5, shape = 21, stroke = 2, alpha = .8) +
+    scale_color_identity() +
+    scale_fill_identity() +
+    si_style_xgrid() +
+    theme(plot.background = element_rect(fill = "white", color = NA),
+          plot.title.position = "plot",
+          strip.placement = "outside",
+          strip.text.y = element_text(hjust = .5),
+          legend.position = "right") +
+    labs(x = NULL,
+         y = NULL,
+         title = "Share of MMD (3+ months) as a % of TX_CURR, FY20Q4 - FY21Q3")
+  
 
 
 #analysis--------------------------------------------------------------------------
