@@ -93,19 +93,20 @@
                      sheet = "Heatmap Q2FY21",
                      skip = 2)
   
+  ## Q1 is an xlsx, booooo
+  drive_download(googledrive::as_id("1pY3cv5rt2OX0SytKVJT2MRlZVT7fR1Gq"),
+                 path = "data/risk_q1.xlsx",
+                 overwrite = FALSE)
   
-  
-  
-  
-  df_q1 <- googlesheets4::read_sheet(ss = "1SWTR7fctM74u9mW9-bBpTPM-chLGv2f5gE9gcUx-mDU",
-                                     sheet = "Copy of Heatmap (unsorted) Q1 FY21",
-                                     skip = 1)
+  df_q1 <- read_xlsx(path = "data/risk_q1.xlsx",
+                     sheet = "Heatmap (unsorted) Q1 FY21",
+                     skip = 1)
 
 # MUNGE ============================================================================
   
   #  clean q1
-    q1 <- df_q1 %>%
-    select(-`...23`, -AVERAGE) %>% 
+    q3 <- df_q1 %>%
+    select(-`...23`, -AVERAGE, -`PAK-FP`) %>% 
     fill(`RISK CATEGORY`) %>% 
     filter(!is.na(RISK)) %>%
     pivot_longer(cols = where(is.double),
@@ -125,10 +126,33 @@
     pivot_longer(cols = where(is.double),
                  names_to = 'iso',
                  values_to = 'val') %>%
+    mutate(period = "FY21q2") %>%
     left_join(cntry_list) %>% 
     janitor::clean_names()
   
   #filter(is.na(countryname)) %>% distinct(iso)
+  
+  #clean q1
+  
+  q1 <- df_q1 %>% 
+  mutate(tier_level = `...25`) %>% 
+  select(-`PAK-FP`, -`...23`, -`...25`, -AVERAGE) %>% 
+    fill(`RISK CATEGORY`) %>% 
+    filter(!is.na(RISK)) %>%
+    pivot_longer(cols = where(is.double),
+                 names_to = 'iso',
+                 values_to = 'val') %>%
+    mutate(period = "FY21q1") %>%
+    left_join(cntry_list) %>% 
+    janitor::clean_names()
+  
+  df_risk <- bind_rows(q1, q2, q3)
+  
+  
+  df_risk %>% 
+    write_csv(file.path(dataout,"fy21_risk.csv"))
+  
+  
   
 # VIZ ============================================================================
 
