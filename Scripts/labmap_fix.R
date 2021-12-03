@@ -20,6 +20,7 @@
     library(patchwork)
     library(ggtext)
     library(here)
+    library(gt)
     
     
   

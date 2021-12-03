@@ -137,7 +137,8 @@ df_tld %>% write_csv("Dataout/tld_share.csv")
 df_mmd <- df_ou %>% 
   filter(indicator == "TX_CURR",
          period %in% c("FY20Q4", "FY21Q1", "FY21Q2", "FY21Q3"),
-         standardizeddisaggregate %in% c("Total Numerator", "Age/Sex/ARVDispense/HIVStatus")) %>%
+         standardizeddisaggregate %in% c("Total Numerator", "Age/Sex/ARVDispense/HIVStatus"),
+         operatingunit != "South Africa") %>%
   mutate(mmd = case_when(otherdisaggregate == "ARV Dispensing Quantity - 3 to 5 months" ~ "mmd",
                          otherdisaggregate == "ARV Dispensing Quantity - 6 or more months" ~ "mmd",
                          standardizeddisaggregate == "Total Numerator" ~ "tot_num",
@@ -151,8 +152,13 @@ df_mmd <- df_ou %>%
   mutate(color_fill = ifelse(period == "FY20Q4", "white", "#7fbf7b"),
          color_stroke = ifelse(period == "FY20Q4", "#af8dc3", "#7fbf7b"),
          min_eb = case_when(period == "FY21Q3" ~ .95*share),
-         max_eb = case_when(period == "FY21Q3" ~ 1.05*share))
-  
+         max_eb = case_when(period == "FY21Q3" ~ 1.05*share)) %>% 
+  group_by(operatingunit) %>% 
+  mutate(terminal = case_when(period == "FY21Q3" ~ share)) %>% 
+  fill(., terminal, .direction = "up") %>%
+  ungroup() %>% 
+  mutate(sort_order = fct_reorder(operatingunit, terminal, .desc = F))
+
   
 #viz-------------------------------------------------------------------------------
 
@@ -213,24 +219,24 @@ df_tld %>%
     
 ##slope chart
     
-  df_tld %>% 
-    filter(period %in% c("FY20Q4", "FY21Q2")) %>% 
-    ggplot(aes(x = period,
-               y = share_tld,
-               group = operatingunit)) +
-    geom_line() +
-    facet_wrap(~tertile) +
-    geom_point(shape = 21, size = 3) +
-    scale_fill_identity() +
-    scale_color_identity() +
-    si_style_nolines() +
-    scale_x_discrete(expand = c(0.05, 0.05)) +
-    ggrepel::geom_text_repel(data = . %>% filter(period == "FY21Q2"), 
-                             aes(label = paste0(operatingunit, " - ", scales::percent(share_tld))), 
-                             nudge_x = - 0.3,
-                             hjust = -0.5,
-                             size = 3,
-                             force = 1)
+  # df_tld %>% 
+  #   filter(period %in% c("FY20Q4", "FY21Q2")) %>% 
+  #   ggplot(aes(x = period,
+  #              y = share_tld,
+  #              group = operatingunit)) +
+  #   geom_line() +
+  #   facet_wrap(~tertile) +
+  #   geom_point(shape = 21, size = 3) +
+  #   scale_fill_identity() +
+  #   scale_color_identity() +
+  #   si_style_nolines() +
+  #   scale_x_discrete(expand = c(0.05, 0.05)) +
+  #   ggrepel::geom_text_repel(data = . %>% filter(period == "FY21Q2"), 
+  #                            aes(label = paste0(operatingunit, " - ", scales::percent(share_tld))), 
+  #                            nudge_x = - 0.3,
+  #                            hjust = -0.5,
+  #                            size = 3,
+  #                            force = 1)
   
   ##tim's slope
   ##slope chart
@@ -290,9 +296,7 @@ df_tld %>%
   df_tld_tim %>% 
     mutate(ou_facet = paste0(facet_order, ":", ou_short),
            sort_var = case_when(
-             period == "FY21Q2" ~ share_tld
-           )
-    ) %>% 
+             period == "FY21Q2" ~ share_tld)) %>% 
     group_by(ou_short) %>% 
     fill(., sort_var, .direction = "up") %>% 
     ungroup() %>% 
@@ -312,14 +316,19 @@ df_tld %>%
     si_style_ygrid() +
     labs(fill = "TLD Share", x = NULL, y = NULL) +
     scale_y_continuous(labels = percent, limits = c(-0.05, 1.05)) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    labs(x = NULL, y = NULL, title = "TLD as a percentage of all 1st line dispensations",
+         subtitle = "Change in TLD as a % of all first line regimens, FY20Q4 - FY21Q2",
+         caption = "Source: Genie Q3 refresh, frozen") +
+    si_save("Images/tld_percent.png", scale = 1.5)
+  
   
   
   ##mmd table
   
   df_mmd %>%
     filter(period %in% c("FY20Q4", "FY21Q3")) %>% 
-    ggplot(aes(x = share, y = operatingunit, color = color_stroke, fill = color_fill)) +
+    ggplot(aes(x = share, y = sort_order, color = color_stroke, fill = color_fill)) +
       geom_line(aes(group = operatingunit), color = "gray70", show.legend = T) +
       geom_crossbar(data = filter(df_mmd, period == "FY20Q4"), 
                     aes(xmin = min_eb, xmax = max_eb), na.rm = TRUE,
@@ -336,25 +345,26 @@ df_tld %>%
           legend.position = "right") +
     labs(x = NULL,
          y = NULL,
-         title = "Share of MMD (3+ months) as a % of TX_CURR, FY20Q4 - FY21Q3")
+         title = "Share of MMD (3+ months) as a % of TX_CURR, FY20Q4 - FY21Q3") +
+    si_save("Images/mmd_percentage.png", scale = 1.5)
   
 
 
-#analysis--------------------------------------------------------------------------
+ #analysis--------------------------------------------------------------------------
 
-  df %>%
-  filter(facility == "Kalingalinga Urban Health Centre",
-                period == "FY21Q2",
-                indicator == "SC_CURR") %>% 
-  group_by(indicator, otherdisaggregate) %>% 
-  summarise(results = sum(results))
-
-  df %>% 
-    filter(operatingunit == "Zambia",
-           period == "FY21Q2",
-           indicator == "SC_ARVDISP") %>% 
-    group_by(indicator, otherdisaggregate) %>% 
-    summarise(results = sum(results)) %>% write_csv("Dataout/zambamtester.csv")
+  # df %>%
+  # filter(facility == "Kalingalinga Urban Health Centre",
+  #               period == "FY21Q2",
+  #               indicator == "SC_CURR") %>% 
+  # group_by(indicator, otherdisaggregate) %>% 
+  # summarise(results = sum(results))
+  # 
+  # df %>% 
+  #   filter(operatingunit == "Zambia",
+  #          period == "FY21Q2",
+  #          indicator == "SC_ARVDISP") %>% 
+  #   group_by(indicator, otherdisaggregate) %>% 
+  #   summarise(results = sum(results)) %>% write_csv("Dataout/zambamtester.csv")
 
   # 
   # ### number of sites reporting indicator, chemonics v other, 'above' removed:
