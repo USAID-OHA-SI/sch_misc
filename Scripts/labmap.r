@@ -10,6 +10,7 @@ library(readxl)
 library(glamr)
 library(googledrive)
 library(stringr)
+library(janitor)
 
 
 # Import Tools ------------------------------------------------------------
@@ -265,7 +266,7 @@ ca_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Origi
                               TRUE~ "Conventional"),
 #add PSNU to facilities with identical names:
         facility2 =str_c(facility, "-", psnu),
-        facility = case_when(facility == "Unidad de Atención Integral"~facility2, TRUE~facility),
+        facility = case_when(facility == "Unidad de Atenci?n Integral"~facility2, TRUE~facility),
 #Add country variable:
         country = snu1)%>%
   select(-facility2)
@@ -288,30 +289,33 @@ cam_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Orig
          instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
          instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
 
-         add_facility = "No",
+         add_facility = "Yes",
          lab_type = "Conventional",
 #Add country variable:
          country = snu1
          )
   
 
-# glimpse(cam_df)
+glimpse(cam_df)
+count(cam_df, add_facility)
 
 
 # TANZANIA ----------------------------------------------------------------
-
-tz_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL_TZ_August2021_DOD_USAID_CDC.xlsx",
-                    sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other"))%>%
-#Remove blank rows
+tz_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL_TZ_August2021_DOD_USAID_CDC_OCTrevision.xlsx",
+                    sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	
+                                                                  "instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	
+                                                                  "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	
+                                                                  "instrument3_type",	"instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other",
+                                                                  "instrument4_type",	"instrument4_vl",	"instrument4_eid",	"instrument4_tb",	"instrument4_covid", "instrument4_other",
+                                                                  "instrument5_type",	"instrument5_vl",	"instrument5_eid",	"instrument5_tb",	"instrument5_covid", "instrument5_other",
+                                                                  "instrument6_type",	"instrument6_vl",	"instrument6_eid",	"instrument6_tb",	"instrument6_covid", "instrument6_other"))%>%
+  #Remove blank rows
     filter(!is.na(operatingunit))%>%
   #Add columns to match other datasets
-  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
-       instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
-       instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
-       instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+  mutate(instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
 
        add_facility = "No",
-#Several facilities with iinstruments listed had a blank answer to the question "Does this fac have instruments", adding "Yes"'s here:
+#Several facilities with instruments listed had a blank answer to the question "Does this fac have instruments", adding "Yes"'s here:
        lab_instruments = case_when(is.na(instrument1_type)~ "No", TRUE~ "Yes"),
        lab_type = case_when(lab_instruments == "No" ~ as.character(NA),
                             (grepl("GeneX", instrument1_type)& is.na(instrument2_type)) ~"POC/Near POC",
@@ -422,9 +426,9 @@ bots_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Ori
          instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
          instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
          
-         add_facility = "No",
+         add_facility = case_when(is.na(facilityid)~ "Yes", TRUE~ "No"),
          lab_type =  "Conventional",
-         country = operatingunit
+         country = operatingunit)
   #Add info on EID labs and Cobas96 machines from Tebogo's email
         
   
@@ -433,42 +437,35 @@ bots_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Ori
   # BHHRL = "Botswana Harvard HIV Reference Laboratory"
   # Other 4 EID labs have Cobas96 for EID and VL
          
-         )
-
-# glimpse(bots_df)
+glimpse(bots_df)
 # count(bots_df, lab_type)
 # count(bots_df, instrument1_type)
+count(bots_df, add_facility)
 
 
 # ZIMBABWE ----------------------------------------------------------------
-#Zim team send a table (in text of email) with 4 additional facilities
-zim_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL_ ZIM 3 Sept.xlsx",
+#Zim team send a table (in text of email) with 4 additional facilities, I added them to the 
+#tool and saved as "MHupdated..."
+zim_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/MHupdates_PEPFAR Lab Data Collection TOOL_ ZIM 3 Sept.xlsx",
                       sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	
                                         "lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	
                                         "instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",	"instrument2_type",	
                                         "instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",	"instrument3_type",	
-                                        "instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))%>%
+                                        "instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other",
+                                        "instrument4_type", "instrument4_vl",	"instrument4_eid",	"instrument4_tb",	"instrument4_covid","instrument4_other",
+                                        "instrument5_type", "instrument5_vl",	"instrument5_eid",	"instrument5_tb",	"instrument5_covid","instrument5_other",
+                                        "instrument6_type", "instrument6_vl",	"instrument6_eid",	"instrument6_tb",	"instrument6_covid","instrument6_other",
+                                        "instrument7_type", "instrument7_vl",	"instrument7_eid",	"instrument7_tb",	"instrument7_covid","instrument7_other"))%>%
   #Remove blank rows
   filter(!is.na(operatingunit))%>%
   #Add columns to match other datasets
-  mutate(instrument3_other= as.character(NA),
-         instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
-         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
-         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
-         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
-         
-         add_facility = "No",
+  mutate(add_facility = "No",
          lab_type =  "Conventional",
-         country = operatingunit)%>%
+         country = operatingunit)
 
-#Add rows for 4 additional facilities:
-                  add_row(operatingunit = "Zimbabwe",	snu1 = as.character(NA),	psnu = as.character(NA),	facility = "NMRL",	facilityid = as.character(NA),	lab_instruments = "Yes",	lab_accredited = as.character(NA),	accredited_vl = as.character(NA),	accredited_eid = as.character(NA),	accredited_tb = as.character(NA),	number_instruments = 4,	instrument1_type = "Biomerieux NucliSENS Easy Mag/EasyQ",	instrument1_vl = "Yes",	instrument1_eid = "No",	instrument1_tb = "No",	instrument1_covid = "Yes",	instrument1_other = "No",	instrument2_type = "Roche CAPCTM 96",	instrument2_vl = "Yes",	instrument2_eid = "Yes",	instrument2_tb = "No",	instrument2_covid = "No",	instrument2_other = "No",	instrument3_type = "Hologic Panther",	instrument3_vl = "Yes",	instrument3_eid = "No",	instrument3_tb = "No",	instrument3_covid = "Yes",	instrument3_other = "No",	instrument4_type = "Cepheid GeneXpert IV",	instrument4_vl = "No",	instrument4_eid = "No",	instrument4_tb = "Yes",	instrument4_covid = "Yes",	instrument4_other = "No",	instrument5_type = as.character(NA),	instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),	instrument5_other = as.character(NA),	instrument6_type = as.character(NA),	instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),	instrument6_other = as.character(NA),	instrument7_type = as.character(NA),	instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),	instrument7_other = as.character(NA),	add_facility = "Yes",	lab_type = "Conventional",	country = operatingunit)%>%
-                  add_row(operatingunit = "Zimbabwe",	snu1 = as.character(NA),	psnu = as.character(NA),	facility = "MPILO",	facilityid = as.character(NA),	lab_instruments = "Yes",	lab_accredited = as.character(NA),	accredited_vl = as.character(NA),	accredited_eid = as.character(NA),	accredited_tb = as.character(NA),	number_instruments = 1,	instrument1_type = "Abbott m2000",	instrument1_vl = "Yes",	instrument1_eid = "No",	instrument1_tb = "No",	instrument1_covid = "Yes",	instrument1_other = "No",	instrument2_type = as.character(NA),	instrument2_vl = as.character(NA),	instrument2_eid = as.character(NA),	instrument2_tb = as.character(NA),	instrument2_covid = as.character(NA),	instrument2_other = as.character(NA),	instrument3_type = as.character(NA),	instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),	instrument3_other = as.character(NA),	instrument4_type = as.character(NA),	instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),	instrument4_other = as.character(NA),	instrument5_type = as.character(NA),	instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),	instrument5_other = as.character(NA),	instrument6_type = as.character(NA),	instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),	instrument6_other = as.character(NA),	instrument7_type = as.character(NA),	instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),	instrument7_other = as.character(NA),	add_facility = "Yes",	lab_type = "Conventional",	country = operatingunit)%>%
-                  add_row(operatingunit = "Zimbabwe",	snu1 = as.character(NA),	psnu = as.character(NA),	facility = "BRIDHL",	facilityid = as.character(NA),	lab_instruments = "Yes",	lab_accredited = as.character(NA),	accredited_vl = as.character(NA),	accredited_eid = as.character(NA),	accredited_tb = as.character(NA),	number_instruments = 1,	instrument1_type = "Cepheid GeneXpert IV",	instrument1_vl = "No",	instrument1_eid = "No",	instrument1_tb = "Yes",	instrument1_covid = "Yes",	instrument1_other = "No",	instrument2_type = as.character(NA),	instrument2_vl = as.character(NA),	instrument2_eid = as.character(NA),	instrument2_tb = as.character(NA),	instrument2_covid = as.character(NA),	instrument2_other = as.character(NA),	instrument3_type = as.character(NA),	instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),	instrument3_other = as.character(NA),	instrument4_type = as.character(NA),	instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),	instrument4_other = as.character(NA),	instrument5_type = as.character(NA),	instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),	instrument5_other = as.character(NA),	instrument6_type = as.character(NA),	instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),	instrument6_other = as.character(NA),	instrument7_type = as.character(NA),	instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),	instrument7_other = as.character(NA),	add_facility = "Yes",	lab_type = "POC/Near POC",	country = operatingunit)%>%
-                  add_row(operatingunit = "Zimbabwe",	snu1 = as.character(NA),	psnu = as.character(NA),	facility = "Mutare",	facilityid = as.character(NA),	lab_instruments = "Yes",	lab_accredited = as.character(NA),	accredited_vl = as.character(NA),	accredited_eid = as.character(NA),	accredited_tb = as.character(NA),	number_instruments = 2,	instrument1_type = "Cepheid GeneXpert IV",	instrument1_vl = "Yes",	instrument1_eid = "Yes",	instrument1_tb = "Yes",	instrument1_covid = "Yes",	instrument1_other = "No",	instrument2_type = "Abbott m2000",	instrument2_vl = "Yes",	instrument2_eid = "No",	instrument2_tb = "No",	instrument2_covid = "Yes",	instrument2_other = "No",	instrument3_type = as.character(NA),	instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),	instrument3_other = as.character(NA),	instrument4_type = as.character(NA),	instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),	instrument4_other = as.character(NA),	instrument5_type = as.character(NA),	instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),	instrument5_other = as.character(NA),	instrument6_type = as.character(NA),	instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),	instrument6_other = as.character(NA),	instrument7_type = as.character(NA),	instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),	instrument7_other = as.character(NA),	add_facility = "Yes",	lab_type = "Conventional",	country = operatingunit)
 
 # glimpse(zim_df)
-count(zim_df, lab_type)
+# count(zim_df, lab_type)
 # count(zim_df, add_facility)
 # count(zim_df, instrument1_type)
 
@@ -662,8 +659,8 @@ cdi_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Orig
          country = "Cote d'Ivoire")
 
 # glimpse(cdi_df)
-count(cdi_df, add_facility)
-count(cdi_df, lab_type)
+# count(cdi_df, add_facility)
+# count(cdi_df, lab_type)
 # count(cdi_df, country)
 
 
@@ -697,35 +694,122 @@ drc_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Orig
 
 
 # CAMEROON ----------------------------------------------------------------
-cameroon_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL_Cameroon.xlsx",
-                     sheet = "data_entry", skip = 1, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
-                                                                   "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",
-                                                                   "instrument3_type", "instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other"))%>%
+#Cameroon left some "instrument type"s empty but mentioned in email that this is because 
+# the Alere-Q qas not in the drop down
+
+cameroon_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/Updated_PEPFAR Lab Data Collection TOOL_Cameroon.xlsx",
+                     sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
+                                                                   "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other"))%>%
   filter(!is.na(operatingunit))%>%
-  mutate(instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+  mutate(instrument3_type = as.character(NA), instrument3_vl = as.character(NA),	instrument3_eid = as.character(NA),	instrument3_tb = as.character(NA),	instrument3_covid = as.character(NA),instrument3_other = as.character(NA),
+        instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
          instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
          instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
          instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
   
-         add_facility == "No",
+         add_facility = "No",
+         lab_type =  case_when((lab_instruments == "Yes"& grepl("Abbott", instrument1_type))~ "Conventional",
+                               (lab_instruments == "Yes"& !grepl("Abbot", instrument1_type))~ "POC/Near POC"),
+         country = operatingunit)
+
+
+#glimpse(cameroon_df)
+# count(cameroon_df, lab_type)
+# count(cameroon_df, instrument2_type)
+
+
+# MOZAMBIQUE --------------------------------------------------------------
+moz_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL_Mozambique_November 2021.xlsx",
+                          sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
+                                                                        "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",
+                                                                        "instrument3_type", "instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid", "instrument3_other",
+                                                                        "instrument4_type", "instrument4_vl",	"instrument4_eid",	"instrument4_tb",	"instrument4_covid", "instrument4_other",
+                                                                        "instrument5_type", "instrument5_vl",	"instrument5_eid",	"instrument5_tb",	"instrument5_covid", "instrument5_other",
+                                                                        "instrument6_type", "instrument6_vl",	"instrument6_eid",	"instrument6_tb",	"instrument6_covid", "instrument6_other"))%>%
+filter(!is.na(operatingunit))%>%
+  mutate(instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
          
+        add_facility = ifelse(is.na(facilityid), "Yes", "No"),
+        lab_type =  case_when((lab_instruments == "Yes"& grepl("GeneX", instrument1_type))~ "POC/Near POC",
+                              (lab_instruments == "Yes"& !grepl("GeneX", instrument1_type))~ "Conventional"),
+        country = operatingunit)
+
+# glimpse(moz_df)
+# count(moz_df, add_facility)
+# count(moz_df, lab_type)
+# count(moz_df, country)
+
+
+# VIETNAM ----------------------------------------------------------------
+
+viet_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL Vietnam.xlsx",
+                          sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
+                                                                        "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",
+                                                                        "instrument3_type", "instrument3_vl",	"instrument3_eid",	"instrument3_tb",	"instrument3_covid"))%>%
+  filter(!is.na(operatingunit))%>%
+  mutate(instrument3_other= as.character(NA),
+        instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         
+         add_facility = ifelse(is.na(facilityid), "Yes", "No"),
+         lab_type = "Conventional",
+         country = operatingunit)
+
+         
+# glimpse(viet_df)
+# count(viet_df, add_facility)
+# count(viet_df, lab_type)
+# count(viet_df, country)
          
 
-glimpse(cameroon_df)
-  
+
+# ZAMBIA ------------------------------------------------------------------
+
+zam_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL Zambia.xlsx",
+                     sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
+                                                                   "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",
+                                                                   "instrument3_type", "instrument3_vl",	"instrument3_eid",	"instrument3_tb"))%>% 
+  filter(!is.na(operatingunit))%>%
+  mutate(instrument3_covid= as.character(NA), instrument3_other= as.character(NA),
+         instrument4_type = as.character(NA), instrument4_vl = as.character(NA),	instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+         instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         
+         add_facility = ifelse(is.na(facilityid), "Yes", "No"),
+         lab_type = "Conventional",
+         country = operatingunit)
+
+# glimpse(zam_df)
+# count(zam_df, add_facility)
+# distinct(zam_df, lab_type)
+# distinct(zam_df, country)
 
 
 
+# ESWATINI ----------------------------------------------------------------
 
+esw_df <- read_excel("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Original Tools/PEPFAR Lab Data Collection TOOL ESWATINI.xlsx",
+                     sheet = "data_entry", skip = 5, col_names = c("operatingunit",	"snu1",	"psnu",	"facility",	"facilityid",	"lab_instruments",	"lab_accredited",	"accredited_vl",	"accredited_eid",	"accredited_tb",	"number_instruments",	"instrument1_type",	"instrument1_vl",	"instrument1_eid",	"instrument1_tb",	"instrument1_covid",	"instrument1_other",
+                                                                   "instrument2_type",	"instrument2_vl",	"instrument2_eid",	"instrument2_tb",	"instrument2_covid",	"instrument2_other",
+                                                                   "instrument3_type", "instrument3_vl", "instrument3_eid",	"instrument3_tb",	"instrument3_covid",	"instrument3_other",
+                                                                   "instrument4_type", "instrument4_vl"))%>% 
+  filter(!is.na(operatingunit))%>%
+  mutate(instrument4_eid = as.character(NA),	instrument4_tb = as.character(NA),	instrument4_covid = as.character(NA),instrument4_other = as.character(NA),
+          instrument5_type = as.character(NA), instrument5_vl = as.character(NA),	instrument5_eid = as.character(NA),	instrument5_tb = as.character(NA),	instrument5_covid = as.character(NA),instrument5_other = as.character(NA),
+         instrument6_type = as.character(NA), instrument6_vl = as.character(NA),	instrument6_eid = as.character(NA),	instrument6_tb = as.character(NA),	instrument6_covid = as.character(NA),instrument6_other = as.character(NA),
+         instrument7_type = as.character(NA), instrument7_vl = as.character(NA),	instrument7_eid = as.character(NA),	instrument7_tb = as.character(NA),	instrument7_covid = as.character(NA),instrument7_other = as.character(NA),
+         
+         add_facility = ifelse(is.na(facilityid), "Yes", "No"),
+         lab_type = "Conventional",
+         country = operatingunit)
 
-
-
-
-
-
-
-
-
+# glimpse(esw_df)
+# distinct(esw_df, country)
+# distinct(esw_df, add_facility)
+# distinct(esw_df, lab_type)
 
 
 
@@ -736,18 +820,16 @@ glimpse(cameroon_df)
 # MERGE ALL DATA FRAMES ---------------------------------------------------
 # -------------------------------------------------------------------------
 lab_df <- kenya_df%>%
-  rbind(malawi_df , ssudan_df, tz_df, burundi_df, ca_df, cam_df, caribbean_df, dr_df, 
+  rbind(malawi_df , ssudan_df, burundi_df, ca_df, cam_df, caribbean_df, dr_df, 
         ethiopia_df, india_df, nigeria_df, bots_df, zim_df, uganda_df, haiti_df, sa_df, rwanda_df, 
-        namibia_df, lesotho_df, cdi_df, drc_df)
+        namibia_df, lesotho_df, cdi_df, drc_df, moz_df, viet_df, cameroon_df, tz_df, zam_df, esw_df)
 
 glimpse(lab_df)
-distinct(lab_df, country)%>% print(n=Inf)
+distinct(lab_df, country)%>% arrange(country)%>%print(n=Inf)
 count(lab_df, country)%>% print(n=Inf)
+lab_df%>% filter(is.na(lab_type))%>% count(country)
 
-write.csv(lab_df, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/all_tools_wide_10.20.2021.csv", row.names = FALSE)
-
-
-
+write.csv(lab_df, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/all_tools_wide_01.12.2022.csv", row.names = FALSE)
 
 
 
@@ -755,7 +837,7 @@ write.csv(lab_df, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combine
 #MUNGE INTO A FORMAT SO THAT WILL ALLOW EASY PIVOT TABLES FOR ISME REVIEW
 
 
-# lab_df <- read.csv("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/lab_map_data_wide_10.18.2021.csv")
+# lab_df <- read.csv("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/[].csv")
 # glimpse(lab_df)
 
 i1_df <- lab_df%>%
@@ -872,19 +954,42 @@ lab_df_long <- i1_df%>%
 
 
 glimpse(lab_df_long)
-distinct(lab_df_long, country)
+distinct(lab_df_long, country)%>%print(n=Inf)
 count(lab_df_long, vl_tests)
 count(lab_df_long, other_tests)
 count(lab_df_long, accredited_tb)
 
 
-write_excel_csv(lab_df_long, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/pepfar_labs_LONG_10.20.2021.csv")
+write_excel_csv(lab_df_long, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/pepfar_labs_LONG_01.12.2022.csv")
+
+#If need to recall this later:
+# lab_df_long <- read.csv("C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/pepfar_labs_LONG_01.10.2022.csv")
+
+# MERGE WITH DATIM MATCH FOR MISSING FACILITYIDS ---------------------------------
+datim_df <- read.csv("C:/Users/mhartig/Documents/VL Mapping/DATIM Mapping/DATIM_LAB CROSSWALK.csv",
+                     encoding= "UFT-8")
+
+combined_lab_df <- lab_df_long%>%
+  left_join(datim_df)%>%
+  mutate(facilityid = case_when(Accept == "yes" ~ orgunituid, TRUE~facilityid))%>%
+  select(-facilityname_datim, -orgunituid, -Accept)
+  
+# Check number of missing UIDs before and after merge:
+# lab_df_long%>%
+#   filter(is.na(facilityid))%>%
+# group_by(country)%>%
+#   summarise(n_distinct(facility))%>%
+#   print(n=Inf)
+# 
+# 
+# combined_lab_df%>%
+#   filter(is.na(facilityid))%>%
+# group_by(country)%>%
+#   summarise(n_distinct(facility))%>%
+#   print(n=Inf)
 
 
-
-
-
-
+write.csv(combined_lab_df, "C:/Users/mhartig/Documents/VL Mapping/Completed Tools/Combined Tools/PEPFAR LAB FACILITIES 12JAN2022.csv", row.names = FALSE)
 
 
 
