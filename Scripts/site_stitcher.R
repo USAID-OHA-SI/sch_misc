@@ -40,10 +40,10 @@ get_data <- function(input) {
   }
 
 #Run function
-##(I run the function twice because R crashes if I try to run with all the datasets at once)
-    #Just SA, TZ, Uganda, ZIM, and ZAM:
+##(I run the function three times because R crashes if I try to
+##  run with all the datasets at once- instead I add about a third
+##  of the countries)
 df_combined <- purrr::map_dfr(.x = files, .f = ~get_data(.x))
-    #All remaining countries
 df_combined2 <- purrr::map_dfr(.x = files, .f = ~get_data(.x))
 df_combined3 <- purrr::map_dfr(.x = files, .f = ~get_data(.x))
 
@@ -55,7 +55,7 @@ df_final <- rbind(df_combined, df_combined2, df_combined3)
 
 #Upload to googledrive
 
-sheet_write(df_final, ss = "1IreR26IOuR0JuM9JNF5bhZQ07_AfVyFu")
+#sheet_write(df_final, ss = "[]")
 
 
 #Export as .csv
