@@ -18,7 +18,7 @@ temp_path <- drive_download(file = as_id("1bmZuTseFV_6v0KnrW6pm8biouxlIsjtH"),
                             type = NULL,
                             overwrite = TRUE)
 
-# strings to search
+# strings to search 
 df_map <- read_csv(temp_path$local_path, show_col_types = FALSE) %>%
                 filter(grepl("Dolutegravir/Lamivudine/Tenofovir", standard_name, ignore.case = TRUE))
 
@@ -40,10 +40,10 @@ df_comm <- read_delim(temp_path$local_path,
                   filter(!is.na(standard_name)) %>% 
                   mutate(item_quantity = ifelse(grepl("90", standard_name), 3*item_quantity, item_quantity)) %>%
                   mutate(item_quantity = ifelse(grepl("180", standard_name), 6*item_quantity, item_quantity)) %>%
-                  group_by(country) %>%
-                  summarise_at(c("item_budget", "item_quantity"), sum, na.rm = TRUE) %>%
+                  mutate(direct_costs = unit_price*item_quantity) %>% 
+                  group_by(country) %>%  
+                  summarise_at(c("direct_costs", "item_quantity"), sum, na.rm = TRUE) %>%
                   rename(Country = country) %>%
-                  rename(value = item_budget) %>%
                   rename(quantity = item_quantity) %>% 
                   mutate(Category = "Planned") 
 
@@ -65,7 +65,7 @@ df_perf <- read_csv(temp_path$local_path, show_col_types = FALSE) %>%
                     mutate(`Ordered Quantity` = ifelse(grepl("180", standard_name), 6*`Ordered Quantity`, `Ordered Quantity`)) %>%
                     group_by(Country) %>%
                     summarise_at(c("Line Total", "Ordered Quantity"), sum, na.rm = TRUE) %>%
-                    rename(value = `Line Total`) %>%
+                    rename(direct_costs = `Line Total`) %>%
                     rename(quantity = `Ordered Quantity`) %>%
                     mutate(Country = ifelse(grepl("Congo DRC", Country), "Democratic Republic of the Congo", Country)) %>%
                     mutate(Country = ifelse(grepl("Côte d'Ivoire", Country), "Cote d'Ivoire", Country)) %>% 

@@ -44,7 +44,7 @@ df_comm <- read_delim(temp_path$local_path,
                       group_by(country, standard_name) %>%
                       summarise_at(c("item_budget", "item_quantity"), sum, na.rm = TRUE) %>%
                       rename(Country = country) %>%
-                      rename(value = item_budget) %>%
+                      mutate(direct_costs = unit_price*item_quantity) %>% 
                       rename(quantity = item_quantity) %>% 
                       mutate(Category = "Planned") 
 
@@ -64,7 +64,7 @@ df_perf <- read_csv(temp_path$local_path, show_col_types = FALSE) %>%
                       filter(!is.na(standard_name)) %>% 
                       group_by(Country, standard_name) %>%
                       summarise_at(c("Line Total", "Ordered Quantity"), sum, na.rm = TRUE) %>%
-                      rename(value = `Line Total`) %>%
+                      rename(direct_costs = `Line Total`) %>%
                       rename(quantity = `Ordered Quantity`) %>%
                       mutate(Country = ifelse(grepl("Congo DRC", Country), "Democratic Republic of the Congo", Country)) %>%
                       mutate(Country = ifelse(grepl("Côte d'Ivoire", Country), "Cote d'Ivoire", Country)) %>% 
