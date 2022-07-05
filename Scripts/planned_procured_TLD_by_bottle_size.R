@@ -41,10 +41,10 @@ df_comm <- read_delim(temp_path$local_path,
                              fundingagency %in% c("USAID/WCF","USAID")) %>%
                       left_join(y = df_map, by = c( "commodity_item" = "permutated_name")) %>%
                       filter(!is.na(standard_name)) %>% 
-                      group_by(country, standard_name) %>%
-                      summarise_at(c("item_budget", "item_quantity"), sum, na.rm = TRUE) %>%
-                      rename(Country = country) %>%
                       mutate(direct_costs = unit_price*item_quantity) %>% 
+                      group_by(country, standard_name) %>%
+                      summarise_at(c("direct_costs", "item_quantity"), sum, na.rm = TRUE) %>%
+                      rename(Country = country) %>%
                       rename(quantity = item_quantity) %>% 
                       mutate(Category = "Planned") 
 
