@@ -67,7 +67,8 @@
       group_by(fy, funder) %>% 
       summarise(value = sum(line_price, na.rm = T)) %>% 
       mutate(total = sum(value, na.rm = T),
-             share = round(value/total,2))
+             share = round(value/total,2),
+             fund_color = ifelse(funder == "USAID", denim, scooter_light))
 
     
 
@@ -78,18 +79,23 @@
     df_viz %>% 
       ggplot(aes(y = funder)) +
       geom_col(aes(x = total), fill = grey20k) +
-      geom_col(aes(x = value), fill = genoa) +
+      geom_col(aes(x = value, fill = fund_color)) +
       facet_wrap(~fy, scales = "free_x")+
-      geom_text(aes(x = value, label = percent(share)), size = 10/.pt, font = "Source Sans Pro") +
+      geom_text(aes(x = value, label = percent(share,1)),
+                hjust = -1.2,
+                size = 10/.pt,
+                family = "Source Sans Pro") +
       theme(axis.text.y = element_blank(),
             axix.text.x = element_blank()) +
       theme(legend.position = "none") +
       si_style()+
+      scale_fill_identity() +
       scale_x_continuous(label = label_number_si()) +
       labs(x = NULL, y = NULL, title = "Percentage of delivered ARV procurement USAID GHSC-PSM vs all others",
            subtitle = "By fiscal year, percentage and dollar value of ARV quantities received globally",
-           caption = "Source: GHSC-PSM program data") +
-      si_save("Images/arv_procurement_funder_v1.png", scale = 1.5)
+           caption = "Source: GHSC-PSM program data")
+    
+       si_save("Images/arv_procurement_funder_v1.png")
     
     
 
