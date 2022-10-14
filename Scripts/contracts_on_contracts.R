@@ -24,6 +24,7 @@
     library(googledrive)
     library(readxl)
     library(janitor)
+    library(lubridate)
     
       
   
@@ -102,13 +103,36 @@
      relocate(identification_of_the_proposed_subcontractor_far_52_244_2_e_1_iii, .after = last_col()) %>% 
      googlesheets4::sheet_write(as_id("1Ag-ejQD8EoISNQQ6yG2ldTJL2nnYnEo0lmkuM3Ny1P8"),
                                 sheet = "ila_subs_tocorrect")
-     
-     
-     write_csv("Dataout/ila_subs_tocorrect.csv")
-
    
-    
-  
+   #read-in fixed $
+   # clean up to account for obs with missing 'n' value
+   
+   raw2 <- read_sheet(as_id("1Ag-ejQD8EoISNQQ6yG2ldTJL2nnYnEo0lmkuM3Ny1P8"),
+                             sheet = "ila_subs_tocorrect",
+                             col_types = ("dccDcdc"))
+
+   df_prices <- raw2 %>%
+     filter(!is.na(n)) %>%
+     select(n, correct_price)
+   
+   #join correct prices to the original dataset
+   # ifelse for populating the is.na(n) problem
+   
+   joint <- subs %>%
+     left_join(df_prices, by = 'n') %>% 
+     mutate(correct_price = ifelse(is.na(n), proposed_subcontract_price_far_52_244_2_e_1_iv,
+                                   correct_price))
+     
+   
+   #testing
+     
+   # joint %>%
+   #   filter(is.na(n)) %>%
+   #   select(n, correct_price, proposed_subcontract_price_far_52_244_2_e_1_iv) %>% view()
+   # 
+   # joint %>%
+   #   select(n, correct_price, proposed_subcontract_price_far_52_244_2_e_1_iv) %>% view()
+   # 
 # VIZ ============================================================================
 
   #  
