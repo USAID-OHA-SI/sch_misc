@@ -1,0 +1,220 @@
+#PURPOSE: Pull Relevant Indicators - Data Request: Info and Data for ARV Summit - TX_CURR, Patients on PrEP, and TLD Transition
+#CREATED BY: Liz Callahan
+#CREATED ON: 2022-10-20
+
+# -------------------------------------------------------------------------
+
+library(glitr)
+library(glamr)
+library(gisr)
+library(Wavelength)
+library(gophr)
+library(tidyverse)
+library(scales)
+library(sf)
+library(extrafont)
+library(tidytext)
+library(patchwork)
+library(ggtext)
+library(here)
+library(googlesheets4)
+library(googledrive)
+library(readxl)
+library(janitor)
+library(lubridate)
+
+glamr::load_secrets()
+# -------------------------------------------------------------------------
+data   <- "Data"
+dataout <- "Dataout"
+images  <- "Images"
+graphs  <- "Graphics"
+
+
+# -------------------------------------------------------------------------
+
+msd_df <- read_msd("Data/MER/MER_Structured_Datasets_OU_IM_FY20-23_20220916_v2_1.txt")
+glimpse(msd_df)
+msd_df2 <- reshape_msd(msd_df)
+glimpse(msd_df2) %>%  view()
+
+distinct(msd_df2, period_type)
+distinct(msd_df2, indicator) %>% print(n=Inf)
+ls(msd_df2)
+
+
+# EXPLORE -----------------------------------------------------------------
+
+msd_df%>%
+  filter(indicator == "TX_CURR")%>%
+  distinct(disaggregate)
+
+
+#TX CURR to google sheets
+txcurrtogoogle <- msd_df2%>%
+  filter(indicator == "TX_CURR",
+         period_type == "cumulative",
+         period == c("FY22"),
+         disaggregate == "Age/Sex/HIVStatus") %>%
+  group_by( sex, ageasentered) %>%
+  summarise(TX_CURR_FY22Cum = sum(value)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "TX_CURR")
+
+txcurr_sex<- msd_df2%>%
+  filter(indicator == "TX_CURR",
+         period_type == "cumulative",
+         period == c("FY22"),
+         disaggregate == "Age/Sex/HIVStatus") %>%
+  group_by( sex) %>%
+  summarise(TX_CURR_FY22Cum = sum(value)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "TX_CURR_by_sex")
+
+  txcurr_sex<- msd_df2%>%
+    filter(indicator == "TX_CURR",
+           period_type == "cumulative",
+           period == c("FY22"),
+           disaggregate == "Age/Sex/HIVStatus") %>%
+    group_by( ageasentered) %>%
+    summarise(TX_CURR_FY22Cum = sum(value)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "TX_CURR_by_age")
+
+# PrEP --------------------------------------------------------------------
+##adding "PrEP_NEW" and "PrEP_CT" together as they are mutually
+##exclusive and both count toward patients currently on PrEP.
+
+#prep by sex
+prep_ct <- msd_df2%>%
+  filter(indicator ==  "PrEP_CT",
+         disaggregate =="Age/Sex",
+         period_type == "cumulative",
+         period == c("FY22")) %>%
+  group_by( sex, disaggregate) %>%
+  summarise(PrEP_CT_FY22Cum = sum(value))
+
+prep_new <- msd_df2%>%
+  filter(indicator ==  "PrEP_NEW",
+         disaggregate =="Age/Sex",
+         period_type == "cumulative",
+         period == c("FY22")) %>%
+  group_by( sex, disaggregate) %>%
+  summarise(PrEP_New_FY22Cum = sum(value))
+
+prep_combo <- prep_ct %>%
+  right_join(prep_new, by = c( "sex", "disaggregate")) %>%
+  mutate(PrEP_New_and_CT = (PrEP_New_FY22Cum + PrEP_CT_FY22Cum)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "PrEP_by_sex_CTandNEW")
+#prep by age
+prep_ct_age <- msd_df2%>%
+  filter(indicator ==  "PrEP_CT",
+         disaggregate =="Age/Sex",
+         period_type == "cumulative",
+         period == c("FY22")) %>%
+  group_by(ageasentered) %>%
+  summarise(PrEP_CT_FY22Cum = sum(value))
+
+prep_new_age <- msd_df2%>%
+  filter(indicator ==  "PrEP_NEW",
+         disaggregate =="Age/Sex",
+         period_type == "cumulative",
+         period == c("FY22")) %>%
+  group_by(ageasentered) %>%
+  summarise(PrEP_New_FY22Cum = sum(value))
+
+prep_combo_age <- prep_ct_age %>%
+  right_join(prep_new_age, by = "ageasentered") %>%
+  mutate(PrEP_New_and_CT = (PrEP_New_FY22Cum + PrEP_CT_FY22Cum)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "PrEP_by_age_CTandNEW")
+
+# SC ARV ------------------------------------------------------------------
+
+
+scarv <- msd_df2%>%
+  filter(indicator == "SC_ARVDISP")
+
+distinct(scarv, otherdisaggregate)
+
+scarv2 <- msd_df2%>%
+  filter(indicator == "SC_ARVDISP",
+         period_type == "cumulative",
+         otherdisaggregate %in% c("ARV Bottles - TLD 90-count",
+                                  "ARV Bottles - TLD 30-count",
+                                  "ARV Bottles - TLD 180-count",
+                                  "ARV Bottles - NVP Adult",
+                                  "ARV Bottles - TLE 600/TEE",
+                                  "ARV Bottles - TLE/400 90-count",
+                                  "ARV Bottles - Other Adult",
+                                  "ARV Bottles - TLE/400 30-count")) %>%
+  group_by(country, operatingunit, otherdisaggregate, period) %>%
+  summarise(SC_ARVDISP = sum(value))
+
+#ALL ADULT ARVs FY22
+scarv_bottlesdisepensed <- msd_df2%>%
+  filter(indicator == "SC_ARVDISP",
+         period_type == "cumulative",
+         period == "FY22",
+         otherdisaggregate %in% c("ARV Bottles - TLD 90-count",
+                                  "ARV Bottles - TLD 30-count",
+                                  "ARV Bottles - TLD 180-count",
+                                  "ARV Bottles - NVP Adult",
+                                  "ARV Bottles - TLE 600/TEE",
+                                  "ARV Bottles - TLE/400 90-count",
+                                  "ARV Bottles - Other Adult",
+                                  "ARV Bottles - TLE/400 30-count")) %>%
+  group_by(otherdisaggregate) %>%
+  summarise(SC_ARVDISP = sum(value)) %>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "SC_ARV_FY22")
+
+#ALL ADULT ARVs (all fiscal years)
+SC_ARV_by_FY_and_TLD_withMOT <- scarv2%>%
+  group_by(period) %>%
+  mutate(mot = case_when(otherdisaggregate %in% c("ARV Bottles - TLD 90-count",
+                                                  "ARV Bottles - TLE/400 90-count") ~ (SC_ARVDISP*3),
+                         otherdisaggregate=="ARV Bottles - TLD 180-count" ~ (SC_ARVDISP*6),
+                         TRUE ~ SC_ARVDISP)) %>%
+  mutate(ARV = case_when(otherdisaggregate == "ARV Bottles - TLD 90-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLD 30-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLD 180-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - NVP Adult" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE 600/TEE" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE/400 90-count" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - Other Adult" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE/400 30-count" ~ "Other_ARVs"))%>%
+  pivot_wider(names_from = ARV, values_from = mot) %>%
+  summarise(TLD=sum(TLD_ARVs, na.rm = T),OtherARVs = sum(Other_ARVs, na.rm = T)) %>%
+  mutate(Total_ARVs_Dispensed = (TLD+OtherARVs)) %>%
+  mutate(Percentage_TLD = (TLD/Total_ARVs_Dispensed)) %>%
+  mutate(Percentage_OtherARVs = (OtherARVs/Total_ARVs_Dispensed))%>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "SC_ARV_by_ARVType_FY_MonthsofTreatment")
+
+#adult ARVs by country FY22
+SC_ARV_by_FY_and_TLDwithMOT_CountryFY22 <- scarv2%>%
+  filter(period == "FY22") %>%
+  group_by(country, period) %>%
+  mutate(mot = case_when(otherdisaggregate %in% c("ARV Bottles - TLD 90-count",
+                                                  "ARV Bottles - TLE/400 90-count") ~ (SC_ARVDISP*3),
+                         otherdisaggregate=="ARV Bottles - TLD 180-count" ~ (SC_ARVDISP*6),
+                         TRUE ~ SC_ARVDISP)) %>%
+  mutate(ARV = case_when(otherdisaggregate == "ARV Bottles - TLD 90-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLD 30-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLD 180-count" ~ "TLD_ARVs",
+                         otherdisaggregate == "ARV Bottles - NVP Adult" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE 600/TEE" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE/400 90-count" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - Other Adult" ~ "Other_ARVs",
+                         otherdisaggregate == "ARV Bottles - TLE/400 30-count" ~ "Other_ARVs"))%>%
+  pivot_wider(names_from = ARV, values_from = mot) %>%
+  summarise(TLD=sum(TLD_ARVs, na.rm = T),OtherARVs = sum(Other_ARVs, na.rm = T)) %>%
+  mutate(Total_ARVs_Dispensed = (TLD+OtherARVs)) %>%
+  mutate(Percentage_TLD = (TLD/Total_ARVs_Dispensed)) %>%
+  mutate(Percentage_OtherARVs = (OtherARVs/Total_ARVs_Dispensed))%>%
+  googlesheets4::sheet_write(as_id("12Wee3IRV2tY46lVOo9mJpe34M6Y9DtPpLavtjmzH-uI"),
+                             sheet = "SC_ARV_by_Country_FY22_MonthsofTreatment")
+
+
