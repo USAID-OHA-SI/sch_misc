@@ -5,10 +5,8 @@
 
 library(tidyverse)
 library(readxl)
-library(gophr)
-library(glamr)
 library(googledrive)
-library(gophr)
+
 
 # DOWNLOAD TOOLS FROM GOOGLE DRIVE AND SAVE THEM LOCALLY ------------------
 
@@ -16,6 +14,9 @@ local_drive <- "C:/Users/mhartig/Documents/COP23/SPT/Downloaded from PET tracker
 
 
 # IMPORT 'STOCK' AND 'PROCUREMENTS' DATA FROM TOOLS -----------------------
+
+files <- dir(local_drive, pattern = "*xls", full.names = TRUE)
+
 
 #Create function to pull data from excel workbooks
 
@@ -49,12 +50,13 @@ glimpse(global_procure_df)
 global_procure_df%>%distinct(OU)%>%print(n=Inf)
 global_procure_df%>%count(OU)%>%print(n=Inf)
 
-
+#Import global_procure_df
+global_procure_df <-  read.csv("C:/Users/mhartig/Documents/COP23/SPT/Consolidated SPTs/global_procure_data23.csv")
 
 # ADD VERSION VARIABLE ----------------------------------------------------
   #List of OU names
 ou_func <- function(file) {
-  ou_name <- read_excel(path = file, sheet = "1. OU and Items", range = "B1:B1", col_names = FALSE) 
+  ou_name <- read_excel(path = file, sheet = "2. OU & Items-E", range = "B1:B1", col_names = FALSE) 
 }
 
 ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
@@ -62,7 +64,7 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
   mutate(id = row_number())
   
 #List of files in drive
- files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP22/SPT/Pulled from GDrive/")%>%
+ files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/SPT/Consolidated SPTs/")%>%
    tibble(.name_repair = "universal")%>%
    mutate(id = row_number())
    
@@ -77,8 +79,8 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
                       
  
 # EXPORT CVS FILES --------------------------------------------------------
-write.csv(global_stock_df, "C:/Users/mhartig/Documents/COP22/SPT/Consolidated SPT files/global_stock_data22.csv", row.names = FALSE)
-write.csv(global_procure_df, "C:/Users/mhartig/Documents/COP22/SPT/Consolidated SPT files/global_procure_data22.csv", row.names = FALSE)
+write.csv(global_stock_df, "C:/Users/mhartig/Documents/COP23/SPT/Consolidated SPTs/global_stock_data23.csv", row.names = FALSE)
+write.csv(global_procure_df, "C:/Users/mhartig/Documents/COP23/SPT/Consolidated SPTs/global_procure_data23.csv", row.names = FALSE)
 
 
 
