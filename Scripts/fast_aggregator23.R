@@ -29,12 +29,17 @@ merge_commodities <- function(file) {
                                       "Other_Procurement",	"Excluded_from_SPT",	"Needs_Approval",	"Approved_By",	
                                       "Approval_Date",	"List_Price_Reference",	"Commodity_Quantity",	"Remaining_Quantity",	
                                       "Unit_Price",	"Global_Freight_Pct",	"Overhead_Cost",	"Global_Freight_Cost",	"Unit_Cost",	
-                                      "Total_Item_Budget",	"Remaining_Budget",	"Message"))%>%
+                                      "Total_Item_Budget",	"Remaining_Budget",	"Message"),
+                        col_types = c("text",	"text",	"text",	"text",	"numeric",	"text",	"text",	"text",	"text",	"text",	"text",	"numeric",	"text",	"text",	"text",	"text",	"text",	"date",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"text"
+                                      ))%>%
     mutate(OU= as.character(ou_name))%>%
     select(-FAST_Tabs)
 }
 
 # -------------------------------------------------------------------------
+
+files <- dir(local_drive, pattern = "*xls", full.names = TRUE)
+
 
 global_commodities_df <- purrr::map_dfr(.x = files, .f = ~merge_commodities(.x))%>% filter(!is.na(Item))
 
@@ -69,6 +74,8 @@ version_df <- ou_all%>% full_join(files_all)%>%
 #Merge version names to procurement data
 global_commodities_df <- global_commodities_df%>% left_join(version_df)
 
+#check
+global_commodities_df%>% distinct(OU, version)
 
 # Export as .csv ----------------------------------------------------------
 
