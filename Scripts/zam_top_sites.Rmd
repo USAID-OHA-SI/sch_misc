@@ -1,0 +1,163 @@
+---
+title: "ZAM Top Sites^[Source: Genie extract 4/1/23]"
+author: "GH/OHA/SCH"
+date: "2023-04-07"
+output: html_document
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "../Documents"
+    )
+  })
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+require(here)
+require(kableExtra)
+
+```
+
+```{r Read and Munge, include=FALSE, echo=FALSE, message=FALSE}
+
+raw <- read_tsv(here("Data", "Genie_SITE_IM_Zambia.txt"))
+
+df <- raw %>%
+    gophr::reshape_msd() %>% 
+    filter(period_type == "cumulative",
+           trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
+           orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
+    mutate(zam_tot = sum(fy23_q1),
+           site_share = round(fy23_q1/zam_tot,5)) %>%
+    ungroup() %>% 
+    arrange(desc(site_share)) %>% 
+    mutate(percent_share = cumsum(site_share),
+           test = percent_rank(fy23_q1))
+
+df_snu1 <- raw %>%
+    gophr::reshape_msd() %>% 
+    filter(period_type == "cumulative",
+           trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
+           orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
+  ungroup() %>%
+  group_by(snu1) %>%
+    mutate(snu1_tot = sum(fy23_q1),
+           site_share = round(fy23_q1/snu1_tot,5)) %>%
+    arrange(snu1, desc(site_share)) %>% 
+    mutate(percent_share = cumsum(site_share),
+           test = percent_rank(fy23_q1))
+
+df_fa <- raw %>%
+    gophr::reshape_msd() %>% 
+    filter(period_type == "cumulative",
+           trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
+           orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
+  ungroup() %>%
+  group_by(funding_agency) %>%
+    mutate(fa_tot = sum(fy23_q1),
+           site_share = round(fy23_q1/fa_tot,5)) %>%
+    arrange(funding_agency, desc(site_share)) %>% 
+    mutate(percent_share = cumsum(site_share),
+           test = percent_rank(fy23_q1))
+```
+
+### National
+
+The top 100 sites by TX_CURR in the first quarter of FY23 represent 42 percent of all TX_CURR patients.
+
+```{r, echo=FALSE}
+df %>%
+  top_n(100, fy23_q1) %>%
+  mutate(site_share = paste0(round(site_share*100, digits = 1),"%"),
+         percent_share = paste0(round(percent_share*100, digits = 1),"%")) %>%
+  select(`Site Name` = sitename,
+         snu1, 
+         psnu,
+         `Funding Agency` = funding_agency,
+         TX_CURR = fy23_q1,
+         `Percent of Patients` = site_share,
+         `Cumulative Percent of Patients` = percent_share) %>%
+  kbl() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F) %>%
+  kable_paper() %>%
+  scroll_box(height = "400px")
+```
+ 
+### Regional
+
+The top 10 sites by TX_CURR for each of the 10 Provinces indicated by snu1 in the first quarter of FY23. "Percent of Patients" and "Cumulative Percent of Patients" represent each site's share (or cumulative share) of TX_CURR patients in that region only. 
+
+For example, the Kapiri Urban Health Centre serves 4.9% of patients in the Central Province, and the top ten sites in the Central Province represent 29.7% of patients in that province.
+
+```{r, echo=FALSE, message = FALSE}
+df_snu1 %>%
+  group_by(snu1) %>%
+  arrange(snu1, desc(fy23_q1)) %>%
+  top_n(10, fy23_q1) %>%
+  ungroup() %>%
+  mutate(site_share = paste0(round(site_share*100, digits = 1),"%"),
+         percent_share = paste0(round(percent_share*100, digits = 1),"%")) %>%
+  select(#snu1,
+         psnu,
+         `Site Name` = sitename,
+         `Funding Agency` = funding_agency,
+         TX_CURR = fy23_q1,
+         `Percent of Patients` = site_share,
+         `Cumulative Percent of Patients` = percent_share) %>%
+  kbl() %>%
+  kable_styling(fixed_thead = T) %>%
+  kable_paper(bootstrap_options = "striped", full_width = F) %>%
+  pack_rows("Central Province", 1, 10, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Copperbelt Province", 11, 20, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Eastern Province", 21, 30, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Luapula Province", 31, 40, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Lusaka Province", 41, 50, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Muchinga Province", 51, 60, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Northern Province", 61, 70, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("NorthWestern Province", 71, 80, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Southern Province", 81, 90, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Western Province", 91, 100, label_row_css = "background-color: #666; color: #fff;") %>%
+  scroll_box(height = "400px")
+  
+```
+
+
+### Funding Agency
+
+The top 50 sites by TX_CURR for each funding agency indicated by snu1 in the first quarter of FY23. "Percent of Patients" and "Cumulative Percent of Patients" represent each site's share (or cumulative share) of TX_CURR patients for that agency only. 
+
+For example, Universty Teaching Hospital - Adult represents 2.7% of patients at sites funded by HHS/CDC, and the top 50 HHS/CDC-funded sites represent 47% of patients at sites funded by the agency.
+
+```{r, echo=FALSE, message = FALSE}
+df_fa %>%
+  group_by(funding_agency) %>%
+  arrange(funding_agency, desc(fy23_q1)) %>%
+  top_n(50, fy23_q1) %>%
+  ungroup() %>%
+  mutate(site_share = paste0(round(site_share*100, digits = 1),"%"),
+         percent_share = paste0(round(percent_share*100, digits = 1),"%")) %>%
+  select(`Funding Agency` = funding_agency,
+         `Site Name` = sitename,
+         snu1,
+         psnu,
+         TX_CURR = fy23_q1,
+         `Percent of Patients` = site_share,
+         `Cumulative Percent of Patients` = percent_share) %>%
+  kbl() %>%
+  kable_styling(fixed_thead = T) %>%
+  kable_paper(bootstrap_options = "striped", full_width = F) %>%
+  pack_rows("HHS/CDC", 1, 50, label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("USAID", 51, 100, label_row_css = "background-color: #666; color: #fff;") %>%
+  scroll_box(height = "400px")
+  
+```
+
+
+ 
