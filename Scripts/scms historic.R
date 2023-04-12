@@ -25,7 +25,7 @@
     
   
   # Set paths  
-    data   <- "Data"
+    data   <- here("Data")
     dataout <- "Dataout"
     images  <- "Images"
     graphs  <- "Graphics"
@@ -48,7 +48,7 @@
   # data is here: https://docs.google.com/spreadsheets/d/1Sbi6a9y9wm1g1tzu10imtPkZWVAgM92G/edit#gid=845784230
     
   # read in scms
-    raw <- read_xlsx(file.path(data, "SCMS Delivery History - Public Dataset_2016FYQ3.xlsx"),
+    raw <- read_xlsx(paste0(data, "/SCMS Delivery History - Public Dataset_2016FYQ3.xlsx"),
                     sheet = "SCMS Delivery History Dataset")
     
   #load data where Akshara denoted what is what
@@ -64,8 +64,7 @@
     
     xwalk_artmis_raw <- 
       read_sheet(analysis,
-                 sheet = "Artmis Historic ARVs") %>% 
-      filter(!is.na(first_line))
+                 sheet = "Artmis Historic ARVs Disag") 
     
   #read in short names
     
@@ -112,21 +111,23 @@
      df <- df %>% 
       mutate(unit_price = (pack_price/unit_of_measure_per_pack), 
              commodity_cost = (unit_price*line_item_quantity)*unit_of_measure_per_pack) %>% 
-      group_by(item_description, fiscal_year, unit_of_measure_per_pack) %>% 
+      group_by(item_description, fiscal_year, delivered_to_client_date, unit_of_measure_per_pack) %>% 
       summarise(unit_price = mean(unit_price, na.rm = T),
                 line_item_quantity = sum(line_item_quantity, na.rm = T),
                 line_item_value = sum(line_item_value, na.rm = T),
-                commodity_cost = sum(commodity_cost, na.rm = T),
+                #commodity_cost = sum(commodity_cost, na.rm = T),
                 .groups = "drop") %>%
-      mutate(weighted_unit_price = (commodity_cost/line_item_quantity)/unit_of_measure_per_pack) %>%
-       arrange(fiscal_year, item_description)
+      #mutate(weighted_unit_price = (commodity_cost/line_item_quantity)/unit_of_measure_per_pack) %>%
+      rename(released_date = delivered_to_client_date) %>%
+      arrange(released_date, item_description)
      
   ##join in artmis data
      #clean up artmis data
      
     xwalk_artmis <- xwalk_artmis_raw %>% 
-      mutate(fiscal_year = as.character(fiscal_year)) %>% 
-      select(-first_line, -combo_single)
+      mutate(fiscal_year = as.character(fiscal_year),
+             released_date = lubridate::as_date(released_date)) #%>% 
+      #select(-first_line, -combo_single)
      
      
      
