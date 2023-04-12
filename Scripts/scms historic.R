@@ -199,7 +199,119 @@
                    sheet = "historic_pricing")
      
      
+  
+
+# TIM's HOT TAKE ----------------------------------------------------------
+
+  gs_id <- "1ohds5jvOkqv7G_ajC3ZlhSpbXekMfRK5njAU6qrYLFA"
      
+  df <- read_sheet(ss = gs_id, sheet = "historic_pricing") 
+  df_cw <- read_sheet(ss = gs_id, sheet = "short_names")
+  
+df_viz <- df %>% 
+    left_join(., df_cw) %>% 
+    relocate(short_name, .after = item_description) %>% 
+    arrange(item_description, fiscal_year) %>% 
+    mutate(time_on_mkt = row_number(), .by = item_description, .after = fiscal_year) %>% 
+    mutate(reg_label = ifelse(time_on_mkt == max(time_on_mkt), short_name, NA_character_), .by = short_name) 
+
+ a <-  df_viz %>% 
+    ggplot(aes(x = factor(time_on_mkt), y = unit_price, group = short_name, color = short_name)) +
+    geom_line(linewidth = 1) +
+    geom_point(shape = 21, fill = "white", size = 1) +
+    ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt) +
+    scale_color_si(palette = "siei",
+                   discrete = TRUE) +
+    scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                       label= scales::dollar_format(scale=1, prefix="$"), 
+                        ) +
+    scale_x_discrete(expand = c(0.25, 0), 
+                     labels = as.character(seq(0, 12))) +
+    labs(x = "Years on market", y = NULL) +
+    si_style_ygrid(facet_space = 0.5) +
+    theme(legend.position = "none",
+          axis.line.x = element_line()) 
+    si_save("Graphics/Regime_prices_time_on_mkt.svg")
+  
+    # Set the facet scales for regimes that have been on the market for 0 - 4 years
+    b <- df_viz %>% 
+      mutate(max_time_on_mkt = max(time_on_mkt), .by = "short_name") %>%
+      mutate(scale_groups = ifelse(max_time_on_mkt > 4, "top", "bottom")) %>% 
+      mutate(scale_max = max(unit_price), .by = "scale_groups") %>% 
+      mutate(regime_order = fct_reorder(short_name, time_on_mkt, .fun = max, .desc = T)) %>% 
+      mutate(reg_label = ifelse(time_on_mkt == min(time_on_mkt), short_name, NA_character_), .by = short_name) %>% 
+      ggplot(aes(x = factor(time_on_mkt), y = unit_price, group = short_name, color = short_name)) +
+      geom_blank(aes(y = scale_max)) +
+      geom_blank(aes(y = 0)) +
+      geom_line(linewidth = 1) +
+      ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt) +
+      scale_color_si(palette = "siei",
+                     discrete = TRUE) +
+      scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                         label= scales::dollar_format(scale = 1, prefix = "$"),
+                         
+                         
+      ) +
+      scale_x_discrete(expand = c(0.25, 0), 
+                       labels = as.character(seq(0, 12))) +
+      labs(x = "Years on market", y = NULL) +
+      si_style_ygrid(facet_space = 0.5) +
+      facet_wrap(~regime_order, scales = "free", nrow = 2, 
+                 ) +
+      theme(legend.position = "none",
+            axis.line.x = element_line(), 
+            strip.background = element_blank(), strip.text = element_blank()) 
+  
+
+    a + b + plot_layout(heights = c(3, 1))
+    
+    
+    
+    df_viz %>% 
+      mutate(max_time_on_mkt = max(time_on_mkt), .by = "short_name") %>%
+      mutate(scale_groups = ifelse(max_time_on_mkt > 4, "Time on market - long", "Time on market - short")) %>% 
+    ggplot(aes(x = factor(time_on_mkt), y = unit_price, group = short_name, color = short_name)) +
+      #geom_vline(xintercept = 1) +
+      geom_line(linewidth = 1) +
+      geom_point(shape = 21, fill = "white", size = 1) +
+      ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt) +
+      scale_color_si(palette = "siei",
+                     discrete = TRUE) +
+      scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                         label= scales::dollar_format(scale=1, prefix="$"), 
+      ) +
+      #scale_x_discrete(labels = as.character(seq(0, 12))) +
+      labs(x = "Years on market", y = NULL) +
+      facet_wrap(~scale_groups, scales = "free") +
+      si_style_ygrid(facet_space = 0.5) +
+      theme(legend.position = "none",
+            axis.line.x = element_line()) 
+    
+    si_save("Graphics/Regime_prices_time_on_mkt.svg")
+    
+    # Alternative view running down
+    df_viz %>% 
+      mutate(max_time_on_mkt = max(time_on_mkt), .by = "short_name") %>%
+      mutate(scale_groups = ifelse(max_time_on_mkt > 4, "Time on market - long", "Time on market - short")) %>% 
+      ggplot(aes(y = factor(time_on_mkt), x = unit_price, group = short_name, color = short_name)) +
+      geom_hline(yintercept = 12) +
+      geom_line(linewidth = 1) +
+      geom_point(shape = 21, fill = "white", size = 1) +
+      ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt) +
+      scale_color_si(palette = "siei",
+                     discrete = TRUE) +
+      scale_x_continuous(name = "Weighted Unit Price (per pill)",
+                         label= scales::dollar_format(scale=1, prefix="$"), 
+      ) +
+      scale_y_discrete(labels = as.character(seq(0, 12)), limits = rev) +
+      labs(x = "Years on market", y = NULL) +
+      facet_wrap(~scale_groups, scales = "free") +
+      si_style_ygrid(facet_space = 0.5) +
+      theme(legend.position = "none",
+            axis.line.x = element_line()) 
+    
+    
+        
      # df %>% 
      #   distinct(pq_first_sent_to_client_date) %>% view()
      # 
