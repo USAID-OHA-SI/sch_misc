@@ -48,7 +48,7 @@
   # data is here: https://docs.google.com/spreadsheets/d/1Sbi6a9y9wm1g1tzu10imtPkZWVAgM92G/edit#gid=845784230
     
   # read in scms
-    raw <- read_xlsx(paste0(data, "/SCMS Delivery History - Public Dataset_2016FYQ3.xlsx"),
+    raw <- read_xlsx(here("Data", "SCMS Delivery History - Public Dataset_2016FYQ3.xlsx"),
                     sheet = "SCMS Delivery History Dataset")
     
   #load data where Akshara denoted what is what
@@ -141,6 +141,15 @@
                                              "Nevirapine/Lamivudine/Zidovudine 200/150/300 mg Tablet, 60 Tablets",
                                            TRUE ~ item_description)) %>% 
        left_join(names)
+     
+     # Write to CSV
+     all_join %>%
+       write_csv(here("Dataout", "historic_arvs_all.csv"))
+     # Write to Google Drive
+     out_gfolder = "1WG5qvFIvMeUp3DXniX_yT7nA36ccDfw6"
+     googledrive::drive_put(media = here("Dataout", "historic_arvs_all.csv"),
+                            path = googledrive::as_id(out_gfolder),
+                            type = "spreadsheet")
      
      ##check joined data
      
