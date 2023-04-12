@@ -28,7 +28,7 @@ df <- raw %>%
     filter(period_type == "cumulative",
            trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
            orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
-    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator, prime_partner_name) %>% 
     summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
     mutate(zam_tot = sum(fy23_q1),
            site_share = round(fy23_q1/zam_tot,5)) %>%
@@ -42,7 +42,7 @@ df_snu1 <- raw %>%
     filter(period_type == "cumulative",
            trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
            orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
-    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator, prime_partner_name) %>% 
     summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
   ungroup() %>%
   group_by(snu1) %>%
@@ -57,7 +57,7 @@ df_fa <- raw %>%
     filter(period_type == "cumulative",
            trendscoarse == "15+" & standardizeddisaggregate == "Age/Sex/HIVStatus",
            orgunituid != "y0cygdhumHI") %>% ##this removes _mil 'site' 
-    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator) %>% 
+    group_by(orgunituid, sitename, snu1, psnu, funding_agency, mech_code, mech_name, indicator, prime_partner_name) %>% 
     summarise(fy23_q1 = sum(value, na.rm = T), .groups = "drop") %>% 
   ungroup() %>%
   group_by(funding_agency) %>%
@@ -83,7 +83,9 @@ df %>%
          `Funding Agency` = funding_agency,
          TX_CURR = fy23_q1,
          `Percent of Patients` = site_share,
-         `Cumulative Percent of Patients` = percent_share) %>%
+         `Cumulative Percent of Patients` = percent_share,
+         `Mechanism` = mech_name,
+         `Prime Partner` = prime_partner_name) %>%
   kbl() %>%
   kable_styling(bootstrap_options = "striped", full_width = F) %>%
   kable_paper() %>%
@@ -110,7 +112,9 @@ df_snu1 %>%
          `Funding Agency` = funding_agency,
          TX_CURR = fy23_q1,
          `Percent of Patients` = site_share,
-         `Cumulative Percent of Patients` = percent_share) %>%
+         `Cumulative Percent of Patients` = percent_share,
+         `Mechanism` = mech_name,
+         `Prime Partner` = prime_partner_name) %>%
   kbl() %>%
   kable_styling(fixed_thead = T) %>%
   kable_paper(bootstrap_options = "striped", full_width = F) %>%
@@ -149,7 +153,9 @@ df_fa %>%
          psnu,
          TX_CURR = fy23_q1,
          `Percent of Patients` = site_share,
-         `Cumulative Percent of Patients` = percent_share) %>%
+         `Cumulative Percent of Patients` = percent_share,
+         `Mechanism` = mech_name,
+         `Prime Partner` = prime_partner_name) %>%
   kbl() %>%
   kable_styling(fixed_thead = T) %>%
   kable_paper(bootstrap_options = "striped", full_width = F) %>%
