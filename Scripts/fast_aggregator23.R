@@ -6,6 +6,9 @@
 library(tidyverse)
 library(readxl)
 library(googledrive)
+library(googlesheets4)
+library(lubridate)
+library(gt)
 
 local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/Downloaded from PET tracker"
 
@@ -81,3 +84,79 @@ global_commodities_df%>% distinct(OU, version)
 
 
 write.csv(global_commodities_df, "C:/Users/mhartig/Documents/COP23/FAST/Consolidated FASTs/fast_commodities_cop23.csv", row.names= FALSE)
+
+###
+#Upload to google drive
+currentDate = today()%>% str_remove(" UTC")
+fastName1 = paste("C:/Users/mhartig/Documents/COP23/FAST/Consolidated FASTs/fast_commodities_cop23_", currentDate, ".csv", sep = "")
+write.csv(global_commodities_df, file=fastName1, row.names = FALSE)
+
+#Upload to google drive
+fastName2 = paste("fast_commodities_cop23_", currentDate, ".csv", sep = "")
+
+drive_upload(media = fastName1,
+             name = fastName2,
+             path = as_id("1GfJYBW5631_KmB_XIWvAW7RW8RgXmzHq"))#this is the path to the aggregated FAST folder
+
+
+
+# -------------------------------------------------------------------------
+#ANALYSIS
+# -------------------------------------------------------------------------
+#Import Data set if needed:
+global_commodities_df <- read.csv("C:/Users/mhartig/Documents/COP23/FAST/Consolidated FASTs/fast_commodities_cop23.csv")
+
+########################
+#PULL ALL RECENCY TESTS:
+########################
+
+recency_df <- global_commodities_df%>%
+  filter(Minor_Category == "Recency Testing")%>%
+  group_by(OU, Minor_Category, Item)%>%
+  summarise(Commodity_Quantity = sum(Commodity_Quantity))
+
+#Save file locally:
+currentDate = today()%>% str_remove(" UTC")
+recencyName1 = paste("C:/Users/mhartig/Documents/COP23/FAST/Analysis/COP_23_recency_", currentDate, ".csv", sep = "")
+
+write.csv(recency_df, file=recencyName1, row.names= FALSE)
+
+ #Upload to google drive
+recencyName2 = paste("COP 23_Recency_", currentDate, ".csv", sep = "")
+
+ drive_upload(media = recencyName1,
+              name = recencyName2,
+              type = "spreadsheet",
+              path = as_id("1qLl2JqSHpCQ_fRxE_nWuWs3iZRDye2A6"))
+ 
+####################
+#PULL HIV SELF TESTS
+####################
+ 
+ hivst_df <- global_commodities_df%>%
+   filter(Minor_Category == "Self Testing")%>%
+   group_by(OU, Minor_Category, Item, Other_Procurement)%>%
+   summarise(Commodity_Quantity = sum(Commodity_Quantity))
+ #Save file locally:
+currentDate = today()%>% str_remove(" UTC")
+hivstName1 = paste("C:/Users/mhartig/Documents/COP23/FAST/Analysis/COP_23_hivst_", currentDate, ".csv", sep = "")
+write.csv(hivst_df, file=hivstName1, row.names = FALSE)
+
+#Upload to google drive
+hivstName2 = paste("COP 23 HIVST_", currentDate, ".csv", sep = "")
+
+drive_upload(media = hivstName1,
+             name = hivstName2,
+             type = "spreadsheet",
+             path = as_id("1qLl2JqSHpCQ_fRxE_nWuWs3iZRDye2A6"))#this is the path to the analysis folder
+
+
+######################
+# Upload FAST Versions ----------------------------------------------------
+######################
+write.csv(version_df, "C:/Users/mhartig/Documents/COP23/FAST/Analysis/FAST_versions.csv", row.names= FALSE)
+drive_upload(media = "C:/Users/mhartig/Documents/COP23/FAST/Analysis/FAST_versions.csv",
+             name = "Available Fasts",
+             type = "spreadsheet",
+             path = as_id("1qLl2JqSHpCQ_fRxE_nWuWs3iZRDye2A6"))#this is the path to the analysis folder
+
