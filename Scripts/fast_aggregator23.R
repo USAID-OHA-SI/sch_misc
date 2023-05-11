@@ -10,7 +10,7 @@ library(googlesheets4)
 library(lubridate)
 library(gt)
 
-local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/Downloaded from PET tracker"
+local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs"
 
 # -------------------------------------------------------------------------
 
@@ -44,12 +44,12 @@ merge_commodities <- function(file) {
 files <- dir(local_drive, pattern = "*xls", full.names = TRUE)
 
 
-global_commodities_df <- purrr::map_dfr(.x = files, .f = ~merge_commodities(.x))%>% filter(!is.na(Item))
+global_commodities_df <- purrr::map_dfr(.x = files, .f = ~merge_commodities(.x))%>% filter(!is.na(Item), !is.na(Commodity_Quantity))
 
 #checks
 glimpse(global_commodities_df)
 global_commodities_df%>% distinct(OU)
-global_commodities_df%>% count(OU)
+global_commodities_df%>% count(OU)%>% print(n=Inf)
 global_commodities_df%>%distinct(Major_Category, Item)%>% print(n=Inf)
 
 
@@ -64,7 +64,7 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
   mutate(id = row_number())
 
 #List of files in drive
-files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/Downloaded from PET tracker/")%>%
+files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs/")%>%
   tibble(.name_repair = "universal")%>%
   mutate(id = row_number())
 
@@ -78,7 +78,7 @@ version_df <- ou_all%>% full_join(files_all)%>%
 global_commodities_df <- global_commodities_df%>% left_join(version_df)
 
 #check
-global_commodities_df%>% distinct(OU, version)
+global_commodities_df%>% distinct(OU, version)%>%print(n=Inf)
 
 # Export as .csv ----------------------------------------------------------
 
@@ -87,6 +87,7 @@ write.csv(global_commodities_df, "C:/Users/mhartig/Documents/COP23/FAST/Consolid
 
 ###
 #Upload to google drive
+  #first save locally
 currentDate = today()%>% str_remove(" UTC")
 fastName1 = paste("C:/Users/mhartig/Documents/COP23/FAST/Consolidated FASTs/fast_commodities_cop23_", currentDate, ".csv", sep = "")
 write.csv(global_commodities_df, file=fastName1, row.names = FALSE)
@@ -159,4 +160,7 @@ drive_upload(media = "C:/Users/mhartig/Documents/COP23/FAST/Analysis/FAST_versio
              name = "Available Fasts",
              type = "spreadsheet",
              path = as_id("1qLl2JqSHpCQ_fRxE_nWuWs3iZRDye2A6"))#this is the path to the analysis folder
+
+
+
 
