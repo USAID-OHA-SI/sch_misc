@@ -10,7 +10,7 @@ library(googledrive)
 
 # DOWNLOAD TOOLS FROM GOOGLE DRIVE AND SAVE THEM LOCALLY ------------------
 
-local_drive <- "C:/Users/mhartig/Documents/COP23/SPT/Downloaded from PET tracker"
+local_drive <- "C:/Users/mhartig/Documents/COP23/SPT/Most recent SPTs"
 
 
 # IMPORT 'STOCK' AND 'PROCUREMENTS' DATA FROM TOOLS -----------------------
@@ -66,7 +66,7 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
   mutate(id = row_number())
   
 #List of files in drive
- files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/SPT/Consolidated SPTs/")%>%
+ files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/SPT/Most recent SPTs/")%>%
    tibble(.name_repair = "universal")%>%
    mutate(id = row_number())
    
