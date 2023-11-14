@@ -223,13 +223,17 @@ df_viz <- df %>%
     relocate(short_name, .after = item_description) %>% 
     arrange(item_description, fiscal_year) %>% 
     mutate(time_on_mkt = row_number(), .by = item_description, .after = fiscal_year) %>% 
-    mutate(reg_label = ifelse(time_on_mkt == max(time_on_mkt), short_name, NA_character_), .by = short_name) 
+    group_by(short_name) %>%
+    mutate(max_time_on_market = max(time_on_mkt)) %>%
+    mutate(reg_label = ifelse(time_on_mkt == max_time_on_market, short_name, NA_character_))
 
  a <-  df_viz %>% 
     ggplot(aes(x = factor(time_on_mkt), y = unit_price, group = short_name, color = short_name)) +
     geom_line(linewidth = 1) +
     geom_point(shape = 21, fill = "white", size = 1) +
-    ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt) +
+    ggrepel::geom_text_repel(aes(label = reg_label)
+                             #, size = 8/.pt
+                             ) +
     scale_color_si(palette = "siei",
                    discrete = TRUE) +
     scale_y_continuous(name = "Weighted Unit Price (per pill)",
@@ -249,7 +253,7 @@ df_viz <- df %>%
       mutate(scale_groups = ifelse(max_time_on_mkt > 4, "top", "bottom")) %>% 
       mutate(scale_max = max(unit_price), .by = "scale_groups") %>% 
       mutate(regime_order = fct_reorder(short_name, time_on_mkt, .fun = max, .desc = T)) %>% 
-      mutate(reg_label = ifelse(time_on_mkt == min(time_on_mkt), short_name, NA_character_), .by = short_name) %>% 
+      mutate(reg_label = ifelse(time_on_mkt == min(time_on_mkt), short_name, NA_character_), .by = short_name) %>% view()
       ggplot(aes(x = factor(time_on_mkt), y = unit_price, group = short_name, color = short_name)) +
       geom_blank(aes(y = scale_max)) +
       geom_blank(aes(y = 0)) +
