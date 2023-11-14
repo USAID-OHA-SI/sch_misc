@@ -10,7 +10,7 @@ library(googlesheets4)
 library(lubridate)
 library(gt)
 
-local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs"
+local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/FINAL FASTs from FACTsINFO"
 
 # -------------------------------------------------------------------------
 
@@ -36,7 +36,9 @@ merge_commodities <- function(file) {
                         col_types = c("text",	"text",	"text",	"text",	"numeric",	"text",	"text",	"text",	"text",	"text",	"text",	"numeric",	"text",	"text",	"text",	"text",	"text",	"date",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"numeric",	"text"
                                       ))%>%
     mutate(OU= as.character(ou_name))%>%
-    select(-FAST_Tabs)
+    select(-FAST_Tabs)%>%
+    mutate(Item = case_when((!is.na(Overhead_Cost)&Overhead_Cost!=0)~"Overhead Cost", TRUE~Item))%>%
+    filter(!is.na(Major_Category), !is.na(Item), Item!=0)
 }
 
 # -------------------------------------------------------------------------
@@ -44,13 +46,15 @@ merge_commodities <- function(file) {
 files <- dir(local_drive, pattern = "*xls", full.names = TRUE)
 
 
-global_commodities_df <- purrr::map_dfr(.x = files, .f = ~merge_commodities(.x))%>% filter(!is.na(Item), !is.na(Commodity_Quantity))
+global_commodities_df <- purrr::map_dfr(.x = files, .f = ~merge_commodities(.x))
+
 
 #checks
 glimpse(global_commodities_df)
 global_commodities_df%>% distinct(OU)
 global_commodities_df%>% count(OU)%>% print(n=Inf)
-global_commodities_df%>%distinct(Major_Category, Item)%>% print(n=Inf)
+global_commodities_df%>%distinct(Major_Category, Item)%>% arrange(Major_Category)%>% print(n=Inf)
+global_commodities_df%>%count(Major_Category)
 
 
 # ADD VERSION VARIABLE ----------------------------------------------------
@@ -64,7 +68,7 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
   mutate(id = row_number())
 
 #List of files in drive
-files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs/")%>%
+files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/FINAL FASTs from FACTsINFO/")%>%
   tibble(.name_repair = "universal")%>%
   mutate(id = row_number())
 

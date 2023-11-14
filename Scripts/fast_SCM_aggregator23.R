@@ -10,7 +10,7 @@ library(googlesheets4)
 library(lubridate)
 library(gt)
 
-local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs"
+local_drive <- "C:/Users/mhartig/Documents/COP23/FAST/FINAL FASTs from FACTsINFO"
 # -------------------------------------------------------------------------
 
 # CREATE A LIST OF ALL TOOLS IN LOCAL DRIVE -----------------------
@@ -57,7 +57,7 @@ ou_all <- purrr::map_dfr(.x = files, .f = ~ou_func(.x))%>%
   mutate(id = row_number())
 
 #List of files in drive
-files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/Most recent FASTs/")%>%
+files_all <- str_remove(files, "C:/Users/mhartig/Documents/COP23/FAST/FINAL FASTs from FACTsINFO/")%>%
   tibble(.name_repair = "universal")%>%
   mutate(id = row_number())
 
@@ -69,6 +69,18 @@ version_df <- ou_all%>% full_join(files_all)%>%
 
 #Merge version names to procurement data
 global_scm_df <- global_scm_df%>% left_join(version_df)
+
+
+
+#Add unmatched version variables
+global_scm_df <- global_scm_df%>%
+  mutate(version= case_when(OU %in% c("El Salvador", "Guatemala", "Honduras", "Nicaragua", "Panama", "Western Hemisphere Region") ~ 
+                              "Central_America_Region_COP23_FAST_V5.xlsx",
+                            OU %in% c("Jamaica", "Trinidad and Tobago") ~ "Caribbean_Region_COP23_FAST_V5.xlsx",
+                            OU %in% c("Colombia", "Peru", "Venezuela") ~ "South_America_Region_COP23_FAST_V5_FINAL.xlsx",
+                                      TRUE ~ version))
+#check
+global_scm_df%>% distinct(OU, version)%>%print(n=Inf)
 
 # Export as .csv ----------------------------------------------------------
 
