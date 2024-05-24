@@ -21,6 +21,7 @@
     library(here)
     library(googlesheets4)
     library(readxl)
+    library(ggrepel)
     
     
   
@@ -199,12 +200,74 @@
              axis.text.x = element_blank()) +
        labs(x = "Fiscal Year", y = NULL) +
        si_style_xline()
+     
+    ### timmy viz
+  
+     #take one
+          
+     all_join %>% 
+       arrange(item_description, fiscal_year) %>% 
+       mutate(time_on_mkt = factor(row_number()), .by = item_description, .after = fiscal_year) %>% 
+       ggplot(aes(x = time_on_mkt, y = unit_price, group = item_description, color = item_description)) +
+       geom_line(size = 1) +
+       geom_point(shape = 21, fill = "white", size = 3) +
+       scale_color_si(palette = "siei",
+                      discrete = TRUE) +
+       scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                          label= scales::dollar_format(scale=1, prefix="$")) +
+       theme(axis.text.y = element_blank(), 
+             axis.text.x = element_blank()) +
+       labs(x = "Years on market", y = NULL) +
+       si_style_xline()
+     
+     
+     ##take two
+     
+      all_join %>% 
+       arrange(item_description, fiscal_year) %>% 
+       mutate(time_on_mkt = factor(row_number()), .by = item_description, .after = fiscal_year) %>% 
+       mutate(reg_label = ifelse(time_on_mkt == 1, short_name, NA_character_)) %>% 
+       ggplot(aes(x = time_on_mkt, y = unit_price, group = short_name, color = short_name)) +
+       geom_line(size = 1) +
+       geom_point(shape = 21, fill = "white", size = 3) +
+       ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt,
+                                hjust = 1) +
+       scale_color_si(palette = "siei",
+                      discrete = TRUE) +
+       scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                          label= scales::dollar_format(scale=1, prefix="$")) +
+       scale_x_discrete(expand = c(0.25, 0)) +
+       theme(axis.text.y = element_blank(), 
+             axis.text.x = element_blank()) +
+       labs(x = "Years on market", y = NULL) +
+       si_style_xline()
        
-
+    ##take three, small multiples
+      all_join %>% 
+        arrange(item_description, fiscal_year) %>% 
+        mutate(time_on_mkt = factor(row_number()), .by = item_description, .after = fiscal_year) %>% 
+        mutate(reg_label = ifelse(time_on_mkt == 1, short_name, NA_character_)) %>% 
+        ggplot(aes(x = time_on_mkt, y = unit_price, group = short_name, color = short_name)) +
+        geom_line(size = 1) +
+        geom_point(shape = 21, fill = "white", size = 3) +
+        facet_wrap("short_name", scales = "free") +
+        # ggrepel::geom_text_repel(aes(label = reg_label), size = 8/.pt,
+        #                          hjust = 1) +
+        scale_color_si(palette = "siei",
+                       discrete = TRUE) +
+        scale_y_continuous(name = "Weighted Unit Price (per pill)",
+                           label= scales::dollar_format(scale=1, prefix="$")) +
+        scale_x_discrete(expand = c(0.25, 0)) +
+        theme(axis.text.y = element_blank(), 
+              axis.text.x = element_blank()) +
+        labs(x = "Years on market", y = NULL) +
+        si_style_xline()
+      
+      
 # SPINDOWN ============================================================================
      
      
-     df %>% 
+     all_join %>% 
        write_sheet(analysis,
                    sheet = "historic_pricing")
      

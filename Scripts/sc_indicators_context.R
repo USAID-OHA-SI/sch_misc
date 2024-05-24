@@ -10,7 +10,6 @@
 library(glitr)
 library(glamr)
 library(gisr)
-library(Wavelength)
 library(gophr)
 library(tidyverse)
 library(scales)
@@ -35,21 +34,21 @@ rasdata <- glamr::si_path("path_raster")
 shpdata <- glamr::si_path("path_vector")
 datim   <- glamr::si_path("path_datim")  
   
-  first_line <- c("ARV Bottles - TLD 30-count",
-                 "ARV Bottles - TLE/400 30-count",
-                 "ARV Bottles - TLD 90-count",
-                 "ARV Bottles - TLD 180-count",
-                 "ARV Bottles - TLE 600/TEE",
-                 "ARV Bottles - TLE/400 90-count")
-  
-  tld <- c("ARV Bottles - TLD 30-count", "ARV Bottles - TLD 90-count", "ARV Bottles - TLD 180-count")
+  # first_line <- c("ARV Bottles - TLD 30-count",
+  #                "ARV Bottles - TLE/400 30-count",
+  #                "ARV Bottles - TLD 90-count",
+  #                "ARV Bottles - TLD 180-count",
+  #                "ARV Bottles - TLE 600/TEE",
+  #                "ARV Bottles - TLE/400 90-count")
+  # 
+  # tld <- c("ARV Bottles - TLD 30-count", "ARV Bottles - TLD 90-count", "ARV Bottles - TLD 180-count")
   
   colors_cat <- c(denim, scooter, burnt_sienna)
   
 
 
 ## site level with sc* indicators
-df <- read_msd(file.path(merdata, "Genie-SiteByIMs-MultipleOUs-Frozen-2021-09-14.zip")) %>% 
+df <- read_psd(file.path(merdata, "Genie_SITE_IM_Global_Frozen_cf756409-7901-4920-8e2a-72b8b2f39641.txt")) %>% 
   reshape_msd("quarters") %>% glimpse()
 
 ##OU by IM

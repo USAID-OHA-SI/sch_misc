@@ -121,7 +121,7 @@
                      folderpath = merdata,
                      zip = F)
     
-    mer_df <- read_msd(file.path(merdata, name),
+    mer_df <- read_msd(file.path(merdata, "Genie_OU_IM_Global_Frozen_tx_curr_9.26.22.txt"),
                        save_rds = T,
                        remove_txt = F)
     
@@ -228,9 +228,9 @@
     
   df_viz <- df_all %>%
       filter(country == "Mozambique",
-             fy == "2021",
-             period != "2021-10-31",
-             period != "2021-11-30") %>%
+             fy == "2022",
+             period != "2021-06-30",
+             period != "2022-07-31") %>%
       mutate(point_color = ifelse(mot_soh > TX_CURR, "#047491", "#af273d"),
              date_sort = fct_reorder(pd, period, .desc = FALSE),
              text_color = ifelse(mot_soh/1000 < 5500, grey90k, "#FFFFFF"))
@@ -243,7 +243,7 @@
     df_viz %>%
       ggplot(aes(x = period,
                  y = ratio, group = country)) +
-      annotate("rect", xmin = as.Date("2020-10-31"), xmax = as.Date("2021-09-30"), ymin = 0, ymax = Inf, alpha = 0.5, fill = grey10k) +
+      annotate("rect", xmin = as.Date("2022-07-31"), xmax = as.Date("2021-06-30"), ymin = 0, ymax = Inf, alpha = 0.5, fill = grey10k) +
       geom_hline(yintercept = 1, size = 1, linetype = "dotted", color = grey80k) +
       geom_smooth(color = grey20k, size = 1, se = FALSE, alpha = 0.85) +
       geom_point(aes(fill = point_color),
