@@ -16,7 +16,6 @@ library(googledrive)
 
 #### LOAD DATA ============================================================================
 
-ppmr = read_csv("C:/Users/arichardson/OneDrive - Credence Management Solutions LLC/Downloads/ppmr_master_standardized.csv")
 
 sc_fact_file = list.files("C:/Users/arichardson/OneDrive - Credence Management Solutions LLC/Downloads/Standardized_Processed_Data Jun 21- Dec 22")
 

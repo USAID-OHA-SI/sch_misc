@@ -77,7 +77,8 @@ df %>%
   top_n(100, fy23_q1) %>%
   mutate(site_share = paste0(round(site_share*100, digits = 1),"%"),
          percent_share = paste0(round(percent_share*100, digits = 1),"%")) %>%
-  select(`Site Name` = sitename,
+  select(orgunituid,
+         `Site Name` = sitename,
          snu1, 
          psnu,
          `Funding Agency` = funding_agency,
@@ -86,6 +87,7 @@ df %>%
          `Cumulative Percent of Patients` = percent_share,
          `Mechanism` = mech_name,
          `Prime Partner` = prime_partner_name) %>%
+  write_csv(here("Dataout", "ZambiaTop100Sites.csv"))
   kbl() %>%
   kable_styling(bootstrap_options = "striped", full_width = F) %>%
   kable_paper() %>%

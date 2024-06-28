@@ -157,6 +157,7 @@ logistics_landscape = logistics_landscape %>%
          Organization!="#")
 
 #logistics_landscape %>% write_csv(here("Dataout", "logistics_landscape_clean.csv"))
+logistics_landscape <- read_csv(here("Dataout", "logistics_landscape_clean.csv"))
 
 logistics_landscape %>%
   distinct(`Supply Chain Point`)

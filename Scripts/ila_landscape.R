@@ -10,26 +10,19 @@
 #           Update: I added the 'meta' tab from 4.2.21 versions and added varname row, saved with
 #           stub `jdmod`
 
-# LOCALS & SETUP ============================================================================
 
-# Libraries
-#snippet ohaf
-
-
-# Set paths
-#snippet proj_paths
-
-# Functions	
-
+require(here)
+require(tidyverse)
+require(readxl)
 
 # LOAD DATA ============================================================================	
 
-df <- readxl::read_xlsx("Data/ila/Logistics Landscape by Country_5.19.2021_jdmod.xlsx",
+df <- readxl::read_xlsx(here("Data", "Logistics Landscape by Country_FINAL.xlsx"),
                         sheet = "Logistics Activities",
-                        skip = 3)
+                        skip = 2)
 
-meta <- readxl::read_xlsx("Data/ila/Logistics Landscape by Country_5.19.2021_jdmod.xlsx",
-                          sheet = "meta")
+meta <- readxl::read_xlsx(here("Data", "Logistics Landscape by Country_FINAL.xlsx"),
+                          sheet = "Logistics Activities")
 
 # MUNGE ============================================================================
 
