@@ -106,7 +106,8 @@
     
     comm_data <- comm_data_raw %>% 
       filter(operatingunit %in% c("Uganda", "Zambia", "Tanzania", "Kenya"),
-             implementation_year %in% c("2022", "2023", "2024")) %>% 
+             implementation_year %in% c("2022", "2023", "2024"),
+             mech_name %in% c("GHSC-PSM", "GHSC-RTK")) %>% 
       select(country, 
              mech_name, 
              fundingagency,  
@@ -123,12 +124,6 @@
              item_quantity, 
              unit_cost,
              unit_price)
-      
-    
-    # # write data to google sheet
-    # 
-    # sheet_write(comm_data, ss = "1yC3eOoitYRcn49i7mFEgmhwVrhc0JXBN4OsQYWpJ0SQ",
-    #             sheet = "Commodities dataset")
     
     
   # prepare ARTMIS data 
@@ -240,6 +235,17 @@
     )
     
     for (n in 1:length(big_loop_df$country)) {
+      
+      # Insert Raw Datasets ====================================================
+      
+      sheet_write(comm_data, ss = big_loop_df$gpath[n],
+                  sheet = "Commodities Dataset")
+      sheet_write(perf_data, ss = big_loop_df$gpath[n],
+                  sheet = "Performance Dataset")
+      sheet_write(rtk_data, ss = big_loop_df$gpath[n],
+                  sheet = "RTK Dataset")
+      
+      
       # Create PvP ===================================================================
       
       ## Planned
@@ -275,7 +281,7 @@
         rename(
           "FY22 (COP21)" = COP21,
           "FY23 (COP22)" = COP22,
-          "FY24 (COP23)" = COP23,
+          "FY24 (COP23YR1)" = COP23,
           "Major Category" = major_category
         ) %>%
         select(-order)
@@ -290,11 +296,11 @@
       
       ## Procured
       
-      ### Test
-      rtk_data %>%
-        filter(country == big_loop_df$country[n]) %>%
-        group_by(major_category, fiscal_year_funding) %>%
-        summarize(line_total = sum(line_total, na.rm = T))
+      # ### Test
+      # rtk_data %>%
+      #   filter(country == big_loop_df$country[n]) %>%
+      #   group_by(major_category, fiscal_year_funding) %>%
+      #   summarize(line_total = sum(line_total, na.rm = T))
       
       pvp_perf_data = perf_data %>%
         filter(major_category != "RTKs") %>%
@@ -324,7 +330,7 @@
         rename(
           "FY22 (COP21)" = COP21,
           "FY23 (COP22)" = COP22,
-          "FY24 (COP23)" = COP23,
+          "FY24 (COP23YR1)" = COP23,
           "Major Category" = major_category
         ) %>%
         select(-order,-`Major Category`)
@@ -337,22 +343,33 @@
         sheet = paste0(big_loop_df$country[n], " planned vs procured")
       )
       
-      # ## Diffs
-      # pvp_comm_data %>%
-      #   set_names(c("a","b","c","d")) %>%
-      #   bind_cols(pvp_perf_data %>% set_names(c("e", "f", "g"))) %>%
-      #   mutate("FY22 (COP21)" = round((e-b)*100/b),
-      #          "FY23 (COP22)" = round((f-c)*100/c),
-      #          "FY24 (COP23)" = round((g-d)*100/d)) %>%
-      #   ungroup() %>%
-      #   select("FY22 (COP21)", "FY23 (COP22)", "FY24 (COP23)")
+      ## Diffs
+      pvp_diffs_data = pvp_comm_data %>%
+        set_names(c("a", "b", "c", "d")) %>%
+        bind_cols(pvp_perf_data %>% set_names(c("e", "f", "g"))) %>%
+        mutate(
+          "FY22 (COP21)" = round((e - b) / b, digits = 2),
+          "FY23 (COP22)" = round((f - c) / c, digits = 2),
+          "FY24 (COP23YR1)" = round((g - d) / d, digits = 2)
+        ) %>%
+        ungroup() %>%
+        select("FY22 (COP21)", "FY23 (COP22)", "FY24 (COP23YR1)") %>%
+        mutate_all(function(x) ifelse(is.infinite(x), 1, x)) 
       
+
+      googlesheets4::range_write(
+        data = pvp_diffs_data,
+        ss = big_loop_df$gpath[n],
+        range = "K5:M15",
+        reformat = F,
+        sheet = paste0(big_loop_df$country[n], " planned vs procured")
+      )
       
       # Delivered ============================================================================
       
       lil_loop_df = tibble(
         "cop" = c("COP21", "COP22", "COP23"),
-        "grange" = c("A6:L14", "A16:J24", "A26:H34")
+        "grange" = c("A6:L14", "A18:J26", "A30:H38")
       )
       
       for (m in 1:length(lil_loop_df$cop)) {
