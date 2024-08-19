@@ -62,6 +62,8 @@
     
     rtk_folder <- "1GNl2b046QBPBxw0o4z1YpKz54uCcYl4w"
     
+    uganda_folder <- "1Y6L1cIXgm7DphdGrGALG9L6FuFU8VJ8e"
+    
     
     xwalk <- tibble::tribble(
       ~item_tracer_category,                ~major_category,
@@ -99,6 +101,13 @@
     rtk_filename = download_latest(folder = rtk_folder, pattern = "RTK Order")
     
     rtk_data_raw <- read_excel(here::here("Data", rtk_filename), sheet = "Data")
+    
+  # uganda data
+    
+    uganda_filename = download_latest(folder = uganda_folder, pattern = ".xlsx")
+    
+    uganda_data_raw_2023 = read_excel(here::here("Data", uganda_filename), sheet = "Proc tracking COP23 02.Aug.24", skip = 2)
+    uganda_data_raw_py = read_excel(here::here("Data", uganda_filename), sheet = "Proc tracking COP20-COP22", skip = 2)
 
 # MUNGE ============================================================================
   
@@ -125,6 +134,79 @@
              unit_cost,
              unit_price)
     
+  # prepare uganda data
+    # NOTE: Prefer actual delivery date
+    # Add in MAUL data
+    # Fix major categories
+    # Make a list of issues, incl. different column names between tabs
+    
+    uganda_data_clean_2023 = uganda_data_raw_2023 %>%
+      clean_names() %>%
+      filter(!is.na(number)) %>%
+      mutate(
+        country = "Uganda",
+        expected_delivery_date = case_when(
+          !is.na(as.numeric(expected_delivery_date)) ~ as.character(janitor::excel_numeric_to_date(as.numeric(
+            expected_delivery_date
+          ))),
+          TRUE ~ as.character(expected_delivery_date)
+        ),
+        ladd_fy = case_when(
+          !is.na(
+            lubridate::as_date(expected_delivery_date, format = "%Y-%m-%d")
+          ) ~ substr(as.character(
+            lubridate::quarter(
+              x = lubridate::as_date(expected_delivery_date),
+              with_year = TRUE,
+              fiscal_start = 10
+            )
+          ), 1, 4),
+          TRUE ~ expected_delivery_date
+        )
+      ) %>%
+      select(
+        country,
+        po_do_io_number = reference_number_ro_po,
+        status_name = comment_status,
+        major_category = commodity_category,
+        product_name = item_description_name_strength_dosage_form,
+        base_unit_multiplier = uo_m,
+        fiscal_year_funding = cop_year,
+        unit_price = unit_cost,
+        ordered_quantity = quantity_ordered,
+        line_total = product_cost,
+        ladd_fy
+      )
+    
+    uganda_data_clean_py = uganda_data_raw_py %>%
+      clean_names() %>%
+      filter(!is.na(number)) %>%
+      mutate(country = "Uganda",
+             ladd_fy = case_when(
+               !is.na(expected_delivery_date) ~ substr(as.character(
+                 lubridate::quarter(
+                   x = lubridate::as_date(expected_delivery_date),
+                   with_year = TRUE,
+                   fiscal_start = 10
+                 )
+               ), 1, 4),
+               TRUE ~ as.character(expected_delivery_date)
+             )) %>%
+      select(
+        country,
+        po_do_io_number = reference_number_ro_po,
+        status_name = comment_status,
+        major_category = commodity_category,
+        product_name = item_description_name_strength_dosage_form,
+        base_unit_multiplier = uo_m,
+        fiscal_year_funding = cop_year,
+        unit_price = product_unit_cost,
+        ordered_quantity = quantity_ordered,
+        line_total = total_product_cost,
+        ladd_fy
+      )
+    
+    uganda_perf_data = bind_rows(uganda_data_clean_2023, uganda_data_clean_py)
     
   # prepare ARTMIS data 
     
@@ -184,7 +266,6 @@
           fiscal_year_funding == "FY24" ~ "COP23"
         )
       )
-    
     
     
     # #did it work?
