@@ -1,0 +1,76 @@
+# PURPOSE: Combine and reformat quarterly financial reporting templates
+# AUTHOR: Miriam Hartig | OHA/SCH
+# LICENSE: MIT
+# DATE: 2024-01-04
+#   UPDATES: Updated for FY24Q3 on 29 OCT 2024
+# NOTES:  
+
+# STEPS IN THIS SCRIPT ======================================================================
+  #1. Pull files from Google Drive and save on local machine
+  #2. Upload files into R and combine into one 'master' data set
+  #3. Save master data set on local machine
+  #4. Reformat master data set into 'tableau-ready' data set
+  #5. Save tableau data set on local machine
+  #6. Upload master data set and tableau data set back to Google Drive
+
+# SETUP ============================================================================
+# Libraries
+#Note: These commands activate the packages we will use in the script
+library(tidyverse)
+library(googledrive)
+library(readxl)
+library(janitor)
+library(googlesheets4)
+library(glamr)
+
+
+#WHERE QUARTERLY REPORT FILES ARE STORED ON LOCAL DRIVE:
+local_drive <- "C:/Users/mhartig/Documents/Finance Data/Quarterly Reports/Pulled from G Drive/fy24q3"
+
+          # # DOWNLOAD FILES FROM GOOGLE DRIVE ============================================================================
+          # 
+          # ##I may not be able to batch download files from a google drive directory :(
+          # 
+          # googledrive::drive_download("https://drive.google.com/drive/folders/1LT_Cn1IDJkYmCmwjP2r5BAt1w58Zya4C",
+          #   path = "C:/Users/mhartig/Documents/Finance Data/Quarterly Reports/Pulled from G Drive_test/fy24q3",
+          #   overwrite = TRUE)
+
+
+# IMPORT QUARTERTLY REPORT ============================================================================
+
+#1. CREATE FUNCTION TO PULL DATA FROM WORKBOOK:
+
+read_data <- function(file) {
+  df <- read_excel(path = file,
+              sheet = "FY 24 Quarterly IP Actuals 1",
+              skip = 6,
+              col_types = "text")%>%
+  clean_names()%>% 
+  select(operating_unit:notes)%>%
+  drop_na(operating_unit)%>%
+  replace(is.na(.),"")
+}
+
+
+#CREATE A LIST OF ALL FILES IN THE LOCAL DRIVE
+files <- dir(local_drive, pattern = "*xls", full.names = TRUE)
+
+#CREATE AGGREAGTED DATASET (THIS COMMAND TELLS R TO RUN THE IMPORT FUNCTION
+#ON ALL THE FILES IN THE LOCAL DRIVE):
+all_qrtrps_df <- purrr::map_dfr(.x = files, .f = ~read_data(.x))
+
+#CHECK THAT ALL OUs AND IPS ARE PRESENT IN THE AGGREGATED FILE:
+distinct(all_qrtrps_df, operating_unit, mechanism)
+
+
+# EXPORT MASTER DATA SET AND UPLOAD TO GOOGLE DRIVE ============================================================================
+
+#SAVE LOCALLY
+
+write.csv(all_qrtrps_df, "C:/Users/mhartig/Documents/Finance Data/Quarterly Reports/Master Data File/masterfile_fy24q3.csv", row.names= FALSE)
+
+#SAVE TO GOOGLE DRIVE
+##WILL NEED TO CREATE THE GOOGLE SHEET FIRST
+
+sheet_write(data = all_qrtrps_df, ss= "1UrGVvlN1sHmVjXkEOPnSfNyZqU-Wzm-y2B2Mvbfed5Y",
+            sheet = "Sheet1")
